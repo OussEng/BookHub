@@ -1,0 +1,541 @@
+"title","body","labels"
+"US-AUTH-01 - Inscription","**En tant que** visiteur,
+**je veux** créer un compte,
+**afin de** accéder aux services de la bibliothèque.
+
+### Critères d'acceptation
+- Formulaire : email, mot de passe, prénom, nom
+- Format email validé côté client et serveur (pas de confirmation par lien - A-01)
+- Unicité email vérifiée (HTTP 400 si déjà utilisé)
+- Mot de passe haché BCrypt (coût 12), jamais en clair dans les logs
+- Rôle USER par défaut (RG-USER-01)
+- Redirection vers connexion + message de confirmation
+- Politique mot de passe RG-SEC-01 affichée à la saisie
+- Rate limiting : 3 requêtes POST /auth/register / IP / heure -> 429 (P-11)
+
+Règles de gestion : RG-USER-01, RG-SEC-01
+
+---
+**Endpoint(s) REST :** `POST /api/auth/register`
+**Référence CDC :** CDC §5.1","auth,must,sprint-1"
+"US-AUTH-02 - Connexion","**En tant que** utilisateur inscrit,
+**je veux** me connecter,
+**afin de** accéder à mon espace personnel.
+
+### Critères d'acceptation
+- Formulaire : email, mot de passe
+- JWT généré (payload email, rôle), expiration 24h
+- Jeton transmis via header Authorization
+- Message d'erreur générique en cas d'échec (HTTP 401)
+- Redirection selon rôle : USER -> catalogue, LIBRARIAN/ADMIN -> dashboard
+
+Règles de gestion : RG-SEC-02
+
+---
+**Endpoint(s) REST :** `POST /api/auth/login`
+**Référence CDC :** CDC §5.1","auth,must,sprint-1"
+"US-AUTH-03a - Profil","**En tant que** utilisateur connecté,
+**je veux** consulter et modifier mes informations personnelles,
+**afin de** maintenir mes coordonnées à jour.
+
+### Critères d'acceptation
+- Affichage : email (non modifiable), prénom, nom, téléphone, date d'inscription, rôle
+- Prénom, nom, téléphone modifiables (téléphone facultatif - A-09)
+- Validation client + serveur (Jakarta Validation)
+- Choix du nom affiché sur commentaires : prénom réel ou pseudonyme
+- Accès restreint à son propre profil (contrôle serveur)
+- Message de confirmation après enregistrement
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** CDC §5.1","auth,should,sprint-2"
+"US-AUTH-03b - Changement de mot de passe","**En tant que** utilisateur connecté,
+**je veux** changer mon mot de passe,
+**afin de** sécuriser mon compte.
+
+### Critères d'acceptation
+- Nouveau mot de passe respecte RG-SEC-01
+- Haché en BCrypt avant enregistrement
+- Formulaire : ancien mot de passe, nouveau, confirmation
+- Ancien mot de passe vérifié côté serveur
+
+Règles de gestion : RG-SEC-01
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** CDC §5.1, §7.2","auth,should,sprint-2"
+"US-AUTH-03c - Suppression de compte","**En tant que** utilisateur connecté,
+**je veux** supprimer mon compte,
+**afin de** exercer mon droit à l'oubli.
+
+### Critères d'acceptation
+- Confirmation explicite (mot de passe ou case à cocher)
+- Données personnelles supprimées/anonymisées
+- Refusée si emprunts en cours
+- Réservations en attente annulées, file réordonnée
+- Historique emprunts conservé anonymisé (stats)
+- Commentaires conservés, auteur anonyme
+- Déconnexion, jeton invalidé
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** CDC §5.1, §7.4","auth,should,sprint-2"
+"US-BOOK-01 - Consultation","**En tant que** utilisateur,
+**je veux** consulter les livres du catalogue,
+**afin de** découvrir les ouvrages disponibles.
+
+### Critères d'acceptation
+- Grille responsive (desktop, tablette, mobile)
+- Vignette : couverture, titre, auteur, badge disponibilité (vert/rouge)
+- Pagination serveur, 20 livres/page
+- Clic vignette -> fiche détaillée
+- Chargement < 2s
+- Catalogue réservé aux utilisateurs authentifiés (A-08)
+- Catégories en puces cliquables, filtrage sans rechargement
+
+---
+**Endpoint(s) REST :** `GET /api/books`
+**Référence CDC :** CDC §5.2","catalogue,must,sprint-1"
+"US-BOOK-02 - Détail livre","**En tant que** utilisateur,
+**je veux** voir le détail d'un livre,
+**afin de** décider si je l'emprunte.
+
+### Critères d'acceptation
+- Fiche : titre, auteur, ISBN, catégorie, description, année, exemplaires total/disponible
+- Note moyenne en étoiles + nombre de notes
+- Liste des commentaires (auteur, date)
+- Bouton Emprunter actif si droit d'emprunter, sinon bouton Réserver
+- Accès authentifié requis (A-08)
+
+Règles de gestion : RG-LOAN-05, RG-RESA-02
+
+---
+**Endpoint(s) REST :** `GET /api/books/{id}`
+**Référence CDC :** CDC §5.2","catalogue,must,sprint-1"
+"US-BOOK-03 - Recherche","**En tant que** utilisateur,
+**je veux** rechercher un livre,
+**afin de** le trouver rapidement.
+
+### Critères d'acceptation
+- Barre de recherche permanente sur le catalogue
+- Recherche sur titre, auteur, ISBN, insensible à la casse
+- Filtre par catégorie et par disponibilité
+- Tri : alphabétique, note moyenne, date d'ajout
+- Temps de réponse < 1s (index sur colonnes de recherche)
+- Espaces début/fin ignorés, filtres cumulables
+- Message explicite si aucun résultat
+
+---
+**Endpoint(s) REST :** `GET /api/books/search`
+**Référence CDC :** CDC §5.2","catalogue,must,sprint-1"
+"US-BOOK-04a - Gestion du catalogue - ajout d'un livre","**En tant que** bibliothécaire,
+**je veux** ajouter un livre au catalogue,
+**afin de** enrichir le fonds de la bibliothèque.
+
+### Critères d'acceptation
+- Accès réservé LIBRARIAN et ADMIN (HTTP 403 sinon)
+- Apparition immédiate dans le catalogue (HTTP 201)
+- Champs obligatoires : titre, auteur, ISBN, catégorie (unique), nombre d'exemplaires
+- Format ISBN validé, unicité vérifiée
+- Nombre d'exemplaires entier strictement positif
+
+---
+**Endpoint(s) REST :** `POST /api/books (LIBRARIAN)`
+**Référence CDC :** CDC §5.2, §6.2","catalogue,must,sprint-1"
+"US-BOOK-04b - Gestion du catalogue - modification d'un livre","**En tant que** bibliothécaire,
+**je veux** modifier les informations d'un livre,
+**afin de** tenir le catalogue à jour.
+
+### Critères d'acceptation
+- Mêmes règles de validation qu'à la création
+- Formulaire pré-rempli
+- Diminution du nombre d'exemplaires possible (après retour enregistré), ne peut pas descendre sous le nombre en cours d'emprunt
+- Message de confirmation après enregistrement
+
+---
+**Endpoint(s) REST :** `PUT /api/books/{id} (LIBRARIAN)`
+**Référence CDC :** CDC §5.2, §6.2","catalogue,must,sprint-1"
+"US-BOOK-04c - Gestion du catalogue - suppression d'un livre","**En tant que** bibliothécaire,
+**je veux** supprimer un livre du catalogue,
+**afin de** retirer les ouvrages qui ne circulent plus.
+
+### Critères d'acceptation
+- Réservé LIBRARIAN et ADMIN (HTTP 403 sinon - A-03)
+- Refusée s'il existe des emprunts en cours (message avec nombre d'éléments bloquants)
+- HTTP 204 en cas de succès
+- Confirmation demandée avant suppression
+- Annulation des réservations en attente sur ce livre
+
+Règles de gestion : RG-USER-02
+
+---
+**Endpoint(s) REST :** `DELETE /api/books/{id} (LIBRARIAN/ADMIN - arbitrage A-03)`
+**Référence CDC :** CDC §5.2, §6.2","catalogue,must,sprint-1"
+"US-LOAN-01 - Emprunter","**En tant que** lecteur,
+**je veux** emprunter un livre,
+**afin de** le lire.
+
+### Critères d'acceptation
+- Vérif serveur : exemplaire disponible (RG-LOAN-05), < 3 emprunts en cours (RG-LOAN-01), aucun retard (RG-LOAN-03)
+- Ré-emprunt possible après retour (RG-LOAN-04)
+- Vérifications côté serveur indépendamment de l'UI
+- Message d'erreur distinct par vérification en échec
+- Création directe au statut ACTIVE sans validation bibliothécaire (A-04)
+- Vérif disponibilité + création emprunt dans une même transaction (gestion concurrence - A-05)
+- Date de retour J+14 (RG-LOAN-02)
+- Décrément du nombre d'exemplaires disponibles
+- Écran de confirmation (titre, date de retour)
+
+Règles de gestion : RG-LOAN-01, RG-LOAN-02, RG-LOAN-03, RG-LOAN-04, RG-LOAN-05, RG-LOAN-10
+
+---
+**Endpoint(s) REST :** `POST /api/loans`
+**Référence CDC :** CDC §5.3","emprunt,must,sprint-1"
+"US-LOAN-02 - Mes emprunts","**En tant que** lecteur,
+**je veux** consulter mes emprunts,
+**afin de** connaître les dates de retour.
+
+### Critères d'acceptation
+- Onglet 'En cours' (statut ACTIVE) et 'Historique' (statut RETURNED)
+- Retard signalé visuellement avec nombre de jours
+- Filtrage serveur via jeton (pas de paramètre d'URL)
+
+---
+**Endpoint(s) REST :** `GET /api/loans/my`
+**Référence CDC :** CDC §5.3","emprunt,must,sprint-1"
+"US-LOAN-03 - Retour (Bibliothécaire)","**En tant que** bibliothécaire,
+**je veux** enregistrer un retour,
+**afin de** libérer l'exemplaire.
+
+### Critères d'acceptation
+- Bouton Retour enregistre la date effective
+- Retard calculé automatiquement
+- Statut emprunt -> RETURNED
+- Liste des emprunts en cours accessible (recherche par lecteur/livre)
+- Sans réservation en attente : incrément du nombre d'exemplaires disponibles
+- Avec réservation en attente : notification au premier de la file (Sprint 2 - RG-RESA-05)
+- Refusée si déjà RETURNED
+
+Règles de gestion : RG-RESA-03
+
+---
+**Endpoint(s) REST :** `PUT /api/loans/{id}/return (LIBRARIAN)`
+**Référence CDC :** CDC §5.3, §6.2","emprunt,must,sprint-1"
+"US-RESA-01 - Réserver","**En tant que** lecteur,
+**je veux** réserver un livre indisponible,
+**afin de** être averti dès qu'un exemplaire se libère.
+
+### Critères d'acceptation
+- Bouton Réserver visible seulement si aucun exemplaire disponible (RG-RESA-02)
+- Vérif serveur : < 5 réservations actives (RG-RESA-01)
+- Rang dans la file affiché après confirmation
+- Refusée si le lecteur détient déjà ce livre en emprunt (RG-RESA-04)
+- Double réservation refusée
+- Statut créé : WAITING
+
+Règles de gestion : RG-RESA-01, RG-RESA-02, RG-RESA-04
+
+---
+**Endpoint(s) REST :** `POST /api/reservations`
+**Référence CDC :** CDC §5.4","reservation,should,sprint-2"
+"US-RESA-02 - Mes réservations","**En tant que** lecteur,
+**je veux** consulter mes réservations,
+**afin de** connaître mon rang dans la file d'attente.
+
+### Critères d'acceptation
+- Liste : livre, date de réservation, rang, statut
+- Annulation fait remonter d'un rang les suivants
+- Statuts : WAITING, AVAILABLE, CANCELLED, EXPIRED
+- Annulation possible si WAITING ou AVAILABLE
+
+Règles de gestion : RG-RESA-03
+
+---
+**Endpoint(s) REST :** `GET /api/reservations/my, DELETE /api/reservations/{id}`
+**Référence CDC :** CDC §5.4","reservation,should,sprint-2"
+"US-RATE-01 - Noter","**En tant que** lecteur ayant emprunté le livre,
+**je veux** noter un livre,
+**afin de** partager mon avis.
+
+### Critères d'acceptation
+- Note entière entre 1 et 5
+- Une seule note par lecteur et par livre (mise à jour sinon - RG-RATE-02)
+- Note moyenne recalculée avec une décimale
+- Refusée (HTTP 403) si jamais emprunté ce livre (RG-RATE-01)
+- Recalcul via trigger/procédure stockée
+- Possible dès la création de l'emprunt, sans attendre le retour (A-11)
+
+Règles de gestion : RG-RATE-01, RG-RATE-02
+
+---
+**Endpoint(s) REST :** `POST /api/books/{id}/ratings, PUT /api/ratings/{id}`
+**Référence CDC :** CDC §5.5","notation,should,sprint-2"
+"US-RATE-02 - Commenter","**En tant que** lecteur,
+**je veux** commenter un livre,
+**afin de** donner un avis détaillé.
+
+### Critères d'acceptation
+- Zone de texte limitée à 1000 caractères, compteur affiché
+- Affiché sous la fiche livre avec date de publication
+- Auteur affiché selon préférence (prénom ou pseudonyme)
+- Limite contrôlée aussi côté serveur
+- Contenu échappé à l'affichage (anti-XSS)
+- Auteur peut modifier/supprimer son propre commentaire
+
+Règles de gestion : RG-RATE-03
+
+---
+**Endpoint(s) REST :** `POST /api/books/{id}/ratings`
+**Référence CDC :** CDC §5.5","notation,should,sprint-2"
+"US-DASH-01 - Dashboard lecteur","**En tant que** lecteur,
+**je veux** disposer d'une vue synthétique de mon activité,
+**afin de** suivre mes emprunts en un coup d'œil.
+
+### Critères d'acceptation
+- Alerte visuelle en cas de retard
+- Nombre de réservations actives avec rang
+- 5 derniers livres lus max
+- Emprunts en cours, prochaine date de retour, réservations en attente
+- Accessible depuis le menu principal (pas la page d'arrivée - A-02)
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** CDC §5.6","dashboard,should,sprint-2"
+"US-DASH-02 - Dashboard bibliothécaire","**En tant que** bibliothécaire,
+**je veux** disposer d'indicateurs sur l'activité de la bibliothèque,
+**afin de** piloter mon travail quotidien.
+
+### Critères d'acceptation
+- Top 10 des livres les plus empruntés
+- Graphique évolution mensuelle des emprunts
+- Indicateurs : nombre total de livres, emprunts en cours, retards, réservations en attente
+- Agrégats calculés par procédures stockées
+- Chargement < 2s
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** CDC §5.6","dashboard,could,sprint-2"
+"US-DASH-03 - Dashboard admin","**En tant que** administrateur,
+**je veux** gérer les comptes et voir l'ensemble des indicateurs,
+**afin de** piloter l'activité de l'association.
+
+### Critères d'acceptation
+- Accès réservé ADMIN (HTTP 403 sinon)
+- Accès également aux indicateurs du dashboard bibliothécaire (A-07)
+- Liste : nom, prénom, email, rôle, date d'inscription, nombre d'emprunts en cours
+- Recherche par nom/email, filtre par rôle, liste paginée
+- Aucun mot de passe renvoyé par l'API
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** CDC §5.6, Descriptif p.2","dashboard,should,sprint-2"
+"US-AUTH-04 - Consentement RGPD","**En tant que** visiteur,
+**je veux** être informé du traitement de mes données,
+**afin de** donner un consentement éclairé.
+
+### Critères d'acceptation
+- Inscription impossible sans case cochée
+- Case non pré-cochée sur le formulaire
+- Lien vers la politique de confidentialité
+- Date du consentement enregistrée en base
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** CDC §7.4","auth,should,sprint-1"
+"US-LOAN-05 - Suivi des retards","**En tant que** bibliothécaire,
+**je veux** consulter la liste des emprunts en retard,
+**afin de** relancer les lecteurs concernés.
+
+### Critères d'acceptation
+- Liste : lecteur, contact, livre, date de retour prévue, jours de retard
+- Tri par défaut décroissant sur les jours de retard
+- Calcul en base (vue/procédure stockée)
+- Liste exportable/imprimable
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** Descriptif p.2","emprunt,should,sprint-2"
+"US-RESA-03 - Notification de disponibilité","**En tant que** lecteur ayant réservé,
+**je veux** être notifié quand le livre est disponible,
+**afin de** venir le chercher à temps.
+
+### Critères d'acceptation
+- Au retour d'un exemplaire, réservation du premier de la file (FIFO) -> AVAILABLE
+- Notification visible dans l'application (bandeau/dashboard)
+- Mécanisme déclenché par trigger/procédure stockée
+- Exemplaire réservé au bénéfice du lecteur pendant le délai (RG-RESA-05)
+- Notification interne uniquement, pas de courriel (A-06)
+- Expiration -> statut EXPIRED, proposition au suivant
+
+Règles de gestion : RG-RESA-03
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** CDC §5.4","reservation,should,sprint-2"
+"US-RATE-03 - Modération des commentaires","**En tant que** bibliothécaire,
+**je veux** supprimer un commentaire inapproprié,
+**afin de** maintenir un espace respectueux.
+
+### Critères d'acceptation
+- Vue listant tous les commentaires, tri décroissant par date
+- Réservé LIBRARIAN et ADMIN (HTTP 403 sinon)
+- Recherche par livre ou par auteur
+- Suppression avec confirmation
+- Note et commentaire indépendants
+
+---
+**Endpoint(s) REST :** `DELETE /api/ratings/{id} (LIBRARIAN)`
+**Référence CDC :** CDC §5.5, §6.2","notation,should,sprint-2"
+"US-DASH-04 - Gestion des comptes et des rôles","**En tant que** administrateur,
+**je veux** gérer les comptes et les rôles des utilisateurs,
+**afin de** confier des responsabilités et retirer les comptes qui ne doivent plus exister.
+
+### Critères d'acceptation
+- Rôles attribuables : USER, LIBRARIAN, ADMIN
+- Un admin ne peut pas retirer son propre rôle ADMIN (RG-USER-03)
+- Confirmation avant modification
+- Changement de rôle effectif à la prochaine connexion
+- Action tracée (auteur, date, ancien/nouveau rôle)
+- Suppression de compte (y compris ADMIN) après confirmation
+- Refusée si plus aucun compte ADMIN actif
+
+Règles de gestion : RG-USER-03
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** Descriptif p.2","dashboard,should,sprint-2"
+"US-AUTH-05 - Création d'un compte au comptoir","**En tant que** bibliothécaire,
+**je veux** créer un compte pour un adhérent présent sur place,
+**afin de** servir les personnes qui n'utilisent pas la plateforme.
+
+### Critères d'acceptation
+- Écran réservé LIBRARIAN et ADMIN
+- Champs : email, prénom, nom, téléphone ; mot de passe provisoire généré
+- Consentement papier, date et mode enregistrés (RGPD)
+- Rôle USER par défaut, changement de mot de passe à la première connexion
+
+Origine : proposition de l'équipe (à valider - voir P-04)
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** Équipe - à valider (P-04)","auth,should,sprint-1"
+"US-LOAN-06 - Emprunt enregistré sur place","**En tant que** bibliothécaire,
+**je veux** enregistrer un emprunt pour un lecteur présent au comptoir,
+**afin de** servir les lecteurs qui ne passent pas par la plateforme.
+
+### Critères d'acceptation
+- Écran dédié pour enregistrer un emprunt au comptoir
+- Lecteur identifié par nom ou email ; création de compte si besoin (US-AUTH-05)
+- Mêmes vérifications qu'en ligne : disponibilité, limite de 3, absence de retard
+- Création au statut ACTIVE, décrément immédiat
+- Réservé LIBRARIAN et ADMIN
+
+Règles de gestion : RG-LOAN-01, RG-LOAN-02, RG-LOAN-03, RG-LOAN-10
+Origine : proposition de l'équipe (à valider - voir P-03)
+
+---
+**Endpoint(s) REST :** `-`
+**Référence CDC :** Équipe - à valider (P-03)","emprunt,should,sprint-1"
+"SETUP-01 - Initialisation du dépôt et de l'architecture backend","**Objectif**
+Mettre en place le squelette du projet Spring Boot.
+
+### Critères d'acceptation
+- Projet Spring Boot 3.2+ initialisé (Java 21, Gradle)
+- Architecture en couches ou par feature définie et validée par l'équipe
+- Dépendances : Spring Security, Spring Data JPA, driver SQL Server, Swagger (springdoc-openapi)
+- Convention de nommage et structure de packages documentées dans le README
+
+**Référence CDC :** §6.1, §9.1","setup,must,sprint-0"
+"SETUP-02 - Initialisation du projet frontend Angular","**Objectif**
+Mettre en place le squelette du projet Angular.
+
+### Critères d'acceptation
+- Projet Angular 21 initialisé (TypeScript 5+, standalone components ou modules selon convention équipe)
+- Structure des dossiers (features, services, guards, interceptors) définie
+- HttpClient configuré avec intercepteur pour le JWT
+- Design responsive de base (breakpoints mobile/tablette/desktop)
+
+**Référence CDC :** §6.1, §8.2","setup,must,sprint-0"
+"SETUP-03 - Modélisation et création de la base de données SQL Server","**Objectif**
+Créer le schéma de base de données conforme au MCD/MPD.
+
+### Critères d'acceptation
+- Script SQL de création des tables (book, book_copy, loan, reservation, review, genre, genre_book, users)
+- Contraintes de clés primaires, étrangères et uniques posées (voir MPD)
+- Index sur les colonnes de recherche fréquente (titre, auteur, ISBN, catégorie - ENF-ECO-08)
+- Script versionné dans le dépôt (dossier /sql)
+
+**Référence CDC :** §6.1, §9.1","setup,must,sprint-0"
+"SETUP-04 - Configuration de la sécurité JWT","**Objectif**
+Mettre en place l'authentification par jeton JWT.
+
+### Critères d'acceptation
+- Signature HS256, secret ≥ 256 bits, expiration 24h
+- Payload du jeton : email, rôle
+- Filtre de sécurité Spring qui valide le jeton sur chaque requête protégée
+- Configuration CORS restrictive (origines de l'application uniquement)
+- Protection CSRF activée, cookies SameSite
+
+**Référence CDC :** §7.1, §7.3","setup,security,must,sprint-0"
+"SETUP-05 - Documentation Swagger / OpenAPI","**Objectif**
+Exposer une documentation interactive de l'API.
+
+### Critères d'acceptation
+- Swagger/OpenAPI généré automatiquement (springdoc-openapi)
+- Tous les endpoints documentés au fur et à mesure de leur développement
+- Accessible via une route dédiée (ex. /swagger-ui.html)
+
+**Référence CDC :** §9.1","setup,should,sprint-0"
+"NFR-SEC-01 - Contrôle transverse : sécurité applicative (OWASP)","**Objectif**
+Vérifier que l'ensemble des exigences de sécurité du CDC est respecté sur tout le périmètre livré.
+
+### Critères d'acceptation
+- HTTPS exclusif en production
+- Aucune requête SQL par concaténation (JPA/Spring Data uniquement)
+- Aucune donnée sensible dans l'URL (jeton, mot de passe, id de session)
+- Aucun mot de passe (même haché) dans les logs ou les réponses API
+- Contrôle d'accès par rôle vérifié côté serveur sur chaque endpoint
+- Validation client + serveur sur toute entrée utilisateur
+
+**Référence CDC :** §7, User Stories §5.1 (ENF-SEC-01 à 10)","security,should,sprint-2"
+"NFR-PERF-01 - Contrôle transverse : performance","**Objectif**
+Vérifier les temps de réponse cibles sur l'ensemble de l'application.
+
+### Critères d'acceptation
+- Chargement de page < 2s
+- Réponse API < 500ms (hors traitement lourd)
+- Recherche catalogue < 1s
+- Agrégats des tableaux de bord calculés en base (procédures stockées)
+
+**Référence CDC :** §8.1, User Stories §5.3 (ENF-PERF-01 à 04)","performance,should,sprint-2"
+"NFR-QUAL-01 - Contrôle transverse : qualité et couverture de tests","**Objectif**
+Atteindre le niveau de qualité et de couverture de tests exigé avant la revue finale.
+
+### Critères d'acceptation
+- Couverture de tests backend (JUnit) ≥ 20%
+- Couverture de tests frontend (Jasmine/Karma) ≥ 20%
+- Code commenté, conventions de nommage respectées
+- Toutes les branches relues par un autre membre avant fusion
+
+**Référence CDC :** §8.3, User Stories §5.6 (ENF-QUAL-01 à 07)","quality,should,sprint-2"
+"NFR-COMP-01 - Contrôle transverse : compatibilité et accessibilité","**Objectif**
+Valider l'affichage et l'accessibilité sur l'ensemble des cibles définies.
+
+### Critères d'acceptation
+- Fonctionne sur les 2 dernières versions de Chrome, Firefox, Edge
+- Affichage correct en 1920x1080 et 1366x768, sur tablette et mobile
+- Aucun défilement horizontal
+- Contraste texte/fond niveau AA WCAG (4,5:1 minimum)
+- Parcours principaux utilisables au clavier seul
+
+**Référence CDC :** §8.2, User Stories §5.4-5.5 (ENF-COMP, ENF-ACC)","quality,should,sprint-2"
+"CLOTURE-01 - Préparation de la présentation finale (J10)","**Objectif**
+Préparer le livrable de présentation attendu au J10.
+
+### Critères d'acceptation
+- Documentation Swagger finalisée et à jour
+- Tests unitaires backend et frontend exécutables et passants
+- Diaporama de présentation préparé
+- Démo fonctionnelle préparée, répartie entre tous les membres de l'équipe
+
+**Référence CDC :** §9.1, §9.2","documentation,must,sprint-2"
