@@ -4,7 +4,7 @@ on:
     inputs:
       csv_file:
         description: 'Chemin du fichier CSV dans le repo'
-        default: 'backlog/bookhub_tickets.csv'
+        default: 'backlog/sprint0_conception_tickets.csv'
 
 jobs:
   import:
