@@ -4,14 +4,19 @@ on:
     inputs:
       csv_file:
         description: 'Chemin du fichier CSV dans le repo'
-        default: 'backlog/tickets.csv'
+        default: 'backlog/bookhub_tickets.csv'
+
 jobs:
   import:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Import issues
-        uses: aboutcode-org/github-import-issues-csv@main
+        uses: dsanchezcr/issue-importer-action@v1.0.0
         with:
-          csv_path: ${{ github.event.inputs.csv_file }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          file-path: ${{ github.event.inputs.csv_file }}
+          file-format: csv
+          github-token: ${{ secrets.GITHUB_TOKEN }}
