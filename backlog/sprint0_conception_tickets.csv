@@ -1,0 +1,139 @@
+"title","body","labels"
+"CONCEPT-01 - Diagramme de classes UML","**Objectif**
+Modéliser les entités du domaine et leurs relations sous forme de diagramme de classes UML.
+
+### Contenu attendu
+- Entités : Book, BookCopy, Loan, Reservation, Review, Genre, User
+- Enums : BookCopyCondition, BookCopyStatus, LoanStatus, ReservationStatus, Role
+- Attributs, méthodes (`canBeLoaned()`, `canBeReserved()`)
+- Cardinalités entre les entités (1, 0..*, 1..*)
+
+### Critères d'acceptation
+- Diagramme validé par l'équipe et exporté (PDF/image) dans la documentation
+- Cohérent avec le MCD et le schéma de base de données
+
+**Statut : réalisé** (voir Bookhub_Class_Diagram.pdf)","setup,must,sprint-0"
+"CONCEPT-02 - MCD - Modèle Conceptuel de Données","**Objectif**
+Établir le Modèle Conceptuel de Données (entités, associations, cardinalités) indépendamment de toute implémentation technique.
+
+### Contenu attendu
+- Entités : genre, book, book_copy, review, users, reservation, loan
+- Associations et cardinalités entre entités
+- Identifiants (clés) de chaque entité
+
+### Critères d'acceptation
+- MCD validé par l'équipe, cohérent avec les user stories et règles de gestion
+- Exporté dans la documentation de conception (J2)
+
+**Statut : réalisé** (voir BookHub_MCD.pdf)","setup,must,sprint-0"
+"CONCEPT-03 - MLD - Modèle Logique de Données","**Objectif**
+Traduire le MCD en Modèle Logique de Données : tables, clés primaires et étrangères, sans typage physique.
+
+### Contenu attendu
+- Passage des associations en clés étrangères (loan → users_id, book_copy_id ; reservation → users_id, book_id ; etc.)
+- Table de jonction genre_book pour la relation many-to-many Book/Genre
+- Contraintes d'unicité identifiées (isbn, username, email, serial_number)
+
+### Critères d'acceptation
+- MLD validé, cohérent avec le MCD
+- Sert de base à la rédaction du MPD
+
+**Statut : réalisé** (produit à partir du MCD, cohérent avec le MRD/MPD fournis)","setup,must,sprint-0"
+"CONCEPT-04 - MRD - Modèle Relationnel de Données","**Objectif**
+Formaliser le Modèle Relationnel de Données : tables, colonnes, clés primaires/étrangères, contraintes d'unicité et index.
+
+### Contenu attendu
+- Tables : users, book, book_copy, loan, reservation, review, genre, genre_book
+- Clés primaires (P), étrangères (F), contraintes uniques (U)
+- Index sur les colonnes de recherche (users_id, book_id, book_copy_id)
+
+### Critères d'acceptation
+- Modèle validé, cohérent avec le MCD/MLD
+- Sert de référence pour la création du schéma SQL Server
+
+**Statut : réalisé** (voir BookHub_MRD.pdf)","setup,must,sprint-0"
+"CONCEPT-05 - MPD - Modèle Physique de Données","**Objectif**
+Définir le Modèle Physique de Données avec les types SQL Server réels et les contraintes techniques.
+
+### Contenu attendu
+- Typage SQL Server (NUMERIC(19), VARCHAR(n), DATE...) pour chaque colonne
+- Contraintes NOT NULL, valeurs par défaut, longueurs de champs
+- Nommage définitif des tables et colonnes (snake_case)
+
+### Critères d'acceptation
+- MPD validé et directement traduisible en script de création SQL Server (voir SETUP-03)
+
+**Statut : réalisé** (types SQL Server consolidés, voir BookHub_MRD.pdf)","setup,must,sprint-0"
+"CONCEPT-06 - Schéma de base de données (script SQL Server)","**Objectif**
+Produire le script SQL de création du schéma, prêt à être exécuté.
+
+### Critères d'acceptation
+- Script CREATE TABLE pour chaque entité, avec contraintes (PK, FK, UNIQUE)
+- Index sur les colonnes fréquemment interrogées (ENF-ECO-08)
+- Script versionné dans le dépôt (/sql)
+
+**Lié à :** SETUP-03
+**Référence CDC :** §6.1, §9.1
+
+**Statut : réalisé**","setup,must,sprint-0"
+"CONCEPT-07 - Diagramme de cas d'utilisation (Use Case)","**Objectif**
+Modéliser les interactions entre les acteurs (Visiteur, User, Librarian, Admin) et le système.
+
+### Contenu attendu
+- Acteurs : Visiteur, Utilisateurs enregistrés, Bibliothécaire, Administrateur
+- Cas d'utilisation : s'inscrire, se connecter, consulter catalogue, emprunter, réserver, noter, commenter, gérer catalogue, gérer utilisateurs, modérer commentaires, consulter statistiques...
+- Relations «extends» entre cas d'utilisation
+
+### Critères d'acceptation
+- Diagramme validé, couvrant l'ensemble des rôles et fonctionnalités du périmètre MVP
+
+**Statut : réalisé** (voir projet_angular_use_case_2.pdf)","setup,must,sprint-0"
+"CONCEPT-08 - User stories et critères d'acceptation","**Objectif**
+Rédiger le backlog complet sous forme de user stories avec critères d'acceptation vérifiables.
+
+### Contenu attendu
+- Format : « En tant que RÔLE, je veux ACTION, afin de BÉNÉFICE »
+- Critères d'acceptation classés (issus des documents client / compléments équipe)
+- Priorisation MoSCoW et répartition par sprint
+
+### Critères d'acceptation
+- 28 user stories rédigées et validées, couvrant les modules Authentification, Catalogue, Emprunt, Réservation, Notation, Tableaux de bord
+- Document de synthèse du backlog produit
+
+**Statut : réalisé** (voir BookHub_User_Stories_.docx)","setup,must,sprint-0"
+"CONCEPT-09 - Règles de gestion","**Objectif**
+Formaliser les règles de gestion transverses applicables à plusieurs user stories.
+
+### Contenu attendu
+- Règles emprunt (RG-LOAN-01 à 10), réservation (RG-RESA-01 à 05), notation (RG-RATE-01 à 03), utilisateur (RG-USER-01 à 03), sécurité (RG-SEC-01, 02)
+- Référencement de chaque règle depuis les user stories concernées
+
+### Critères d'acceptation
+- Règles rédigées, identifiées par un code stable, et validées par l'équipe
+
+**Statut : réalisé** (voir chapitre 3 de BookHub_User_Stories_.docx)","setup,must,sprint-0"
+"CONCEPT-10 - Diagramme de séquence","**Objectif**
+Modéliser les interactions temporelles entre les composants pour les scénarios critiques (emprunt, réservation avec file d'attente).
+
+### Contenu attendu
+- Séquence 'Emprunter un livre' : Frontend → API → Service → Repository → BDD, avec vérifications (RG-LOAN-01, 03, 05)
+- Séquence 'Réservation + notification de disponibilité' (RG-RESA-05) : retour d'un exemplaire → notification FIFO → expiration planifiée
+
+### Critères d'acceptation
+- Au moins les 2 scénarios ci-dessus modélisés
+- Diagrammes exportés dans la documentation de conception
+
+**Statut : réalisé**","setup,should,sprint-0"
+"CONCEPT-11 - Diagramme d'architecture","**Objectif**
+Représenter l'architecture globale de l'application (frontend, backend, base de données, sécurité).
+
+### Contenu attendu
+- Frontend Angular / Backend Spring Boot (API REST) / Base SQL Server
+- Positionnement de la sécurité JWT et des couches (controller/service/repository)
+- Éventuellement niveau C4 (Context/Container) si le temps le permet
+
+### Critères d'acceptation
+- Diagramme validé, cohérent avec l'architecture retenue par l'équipe (par feature ou par couche)
+- Intégré à la documentation de conception (J2)
+
+**Statut : réalisé**","setup,should,sprint-0"
