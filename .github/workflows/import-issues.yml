@@ -1,0 +1,17 @@
+name: Import Issues from CSV
+on:
+  workflow_dispatch:
+    inputs:
+      csv_file:
+        description: 'Chemin du fichier CSV dans le repo'
+        default: 'backlog/tickets.csv'
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import issues
+        uses: aboutcode-org/github-import-issues-csv@main
+        with:
+          csv_path: ${{ github.event.inputs.csv_file }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
