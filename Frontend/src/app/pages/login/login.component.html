@@ -1,0 +1,65 @@
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+  <form
+    class="w-full max-w-sm bg-white p-10 rounded-lg shadow-md"
+    (ngSubmit)="onSubmit()"
+    #loginForm="ngForm"
+  >
+    <h1 class="text-2xl font-semibold text-center mb-6">Log in</h1>
+
+    <div class="mb-5 flex flex-col">
+      <label for="email" class="text-sm text-gray-700 mb-1.5">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        [(ngModel)]="email"
+        required
+        email
+        #emailField="ngModel"
+        class="px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-indigo-600"
+      />
+      <span
+        class="text-red-600 text-xs mt-1.5"
+        *ngIf="emailField.invalid && emailField.touched"
+      >
+        Enter a valid email address.
+      </span>
+    </div>
+
+    <div class="mb-5 flex flex-col">
+      <label for="password" class="text-sm text-gray-700 mb-1.5">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        [(ngModel)]="password"
+        required
+        minlength="8"
+        #passwordField="ngModel"
+        class="px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-indigo-600"
+      />
+      <span
+        class="text-red-600 text-xs mt-1.5"
+        *ngIf="passwordField.invalid && passwordField.touched"
+      >
+        Password must be at least 8 characters.
+      </span>
+    </div>
+
+    <p class="text-red-600 text-xs mb-4" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+    <button
+      type="submit"
+      [disabled]="loginForm.invalid || isLoading"
+      class="w-full py-2.5 bg-indigo-600 text-white rounded-md text-sm font-medium
+             hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-colors"
+    >
+      {{ isLoading ? 'Logging in...' : 'Log in' }}
+    </button>
+
+    <p class="text-center text-sm mt-5 text-gray-600">
+      Don't have an account?
+      <a routerLink="/register" class="text-indigo-600 hover:underline">Register</a>
+    </p>
+  </form>
+</div>
