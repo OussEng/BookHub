@@ -5,7 +5,6 @@ import fr.eni.bookhub.loan.dao.ILoanDao;
 import fr.eni.bookhub.loan.entity.Loan;
 import fr.eni.bookhub.loan.entity.LoanStatus;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

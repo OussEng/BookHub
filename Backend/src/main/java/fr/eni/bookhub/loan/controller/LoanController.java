@@ -3,10 +3,8 @@ package fr.eni.bookhub.loan.controller;
 import fr.eni.bookhub.loan.entity.Loan;
 import fr.eni.bookhub.loan.services.LoanService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 @RestController

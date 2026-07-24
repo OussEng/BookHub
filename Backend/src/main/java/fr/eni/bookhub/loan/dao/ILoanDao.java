@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ILoanDao {
 
-    public List<Loan> findAll();
+    List<Loan> findAll();
 
-    public Loan findById(long id);
+    Loan findById(long id);
 }
