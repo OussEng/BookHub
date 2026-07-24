@@ -1,4 +1,4 @@
-package fr.eni.bookhub.loan.services;
+package fr.eni.bookhub.loan.service;
 
 import fr.eni.bookhub.exception.custom.LoanException;
 import fr.eni.bookhub.loan.dao.ILoanDao;

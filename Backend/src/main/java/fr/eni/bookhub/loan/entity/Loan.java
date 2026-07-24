@@ -1,5 +1,6 @@
 package fr.eni.bookhub.loan.entity;
 
+import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;

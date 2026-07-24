@@ -1,7 +1,7 @@
 package fr.eni.bookhub.loan.controller;
 
 import fr.eni.bookhub.loan.entity.Loan;
-import fr.eni.bookhub.loan.services.LoanService;
+import fr.eni.bookhub.loan.service.LoanService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
