@@ -10,6 +10,7 @@ build/
 !**/src/test/**/build/
 
 ### Spring Boot / Secrets ###
+application.properties
 application-local.properties
 application-local.yml
 application-local.yaml
