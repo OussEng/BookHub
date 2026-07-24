@@ -5,6 +5,7 @@ import fr.eni.bookhub.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -21,11 +22,11 @@ public class Loan {
     private Long id;
 
     @Column(nullable = false)
-    private Date loanDate;
+    private LocalDate loanDate;
 
-    private Date dueDate;
+    private LocalDate dueDate;
 
-    private Date returnDate;
+    private LocalDate returnDate;
 
     @Enumerated
     @Column(nullable = false)
