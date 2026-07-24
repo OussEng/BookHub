@@ -51,7 +51,7 @@ public class Book {
     @ManyToMany
     @JoinTable(
             name = "book_author",
-            joinColumns = @JoinColumn(name = "book_id"),
+            joinColumns = @JoinColumn(name = "book_id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
     private Set<Author> authors = new HashSet<>();
