@@ -2,6 +2,7 @@ package fr.eni.bookhub.loan.dto.response;
 
 import fr.eni.bookhub.loan.entity.Loan;
 import fr.eni.bookhub.loan.entity.LoanStatus;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 
 @Getter
 @Builder
+@AllArgsConstructor
 public class LoanDTO {
 
     private Long id;
