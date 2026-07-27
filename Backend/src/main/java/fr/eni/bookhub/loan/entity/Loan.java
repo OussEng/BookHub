@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
 @Table(name = "loans")
@@ -36,6 +35,6 @@ public class Loan {
     private User loaner;
 
     @ManyToOne
-    private BookCopy bookLoaned;
+    private BookCopy bookCopyLoaned;
 
 }
