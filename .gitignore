@@ -119,3 +119,4 @@ e2e/*.map
 
 # ===== Système =====
 .DS_Store
+.claude/
