@@ -25,7 +25,11 @@ public class LoanController {
         return ResponseEntity.ok().body(loanService.findLoansByAuthenticatedUser());
     }
 
-//    @PostMapping("/{id}/borrow")
+    @PostMapping("/{id}/borrow")
+    public ResponseEntity<Void> createLoan(@PathVariable Long id) {
+        loanService.createLoan(id);
+        return ResponseEntity.ok().build();
+    }
 
     @PutMapping("/{id}/return") // En tant que LIBRARIAN
     public ResponseEntity<LoanDTO> returnLoans(@PathVariable Long id) {
