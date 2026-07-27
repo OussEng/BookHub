@@ -20,4 +20,12 @@ public class LoanDaoImpl implements ILoanDao{
     public Loan findById(long id) {
         return loanRepository.findById(id).get();
     }
+
+    public void save(Loan loan) {
+        loanRepository.save(loan);
+    }
+
+    public List<Loan> findByLoanerId(long loanerId) {
+        return loanRepository.findByLoanerId(loanerId);
+    }
 }
