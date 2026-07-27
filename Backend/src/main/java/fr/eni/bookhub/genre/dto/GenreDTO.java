@@ -1,4 +1,4 @@
-package fr.eni.bookhub.book.dto;
+package fr.eni.bookhub.genre.dto;
 
 import lombok.*;
 
@@ -8,10 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 
+public class GenreDTO {
 
-public class BookDTO {
-
-    private String title;
-
-
+    private String label;
 }

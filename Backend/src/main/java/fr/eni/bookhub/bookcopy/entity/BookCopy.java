@@ -25,6 +25,14 @@ public class BookCopy {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookStatus bookStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Condition condition;
+
 
 
 }
