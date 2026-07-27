@@ -18,7 +18,7 @@ public class BookService {
     public List<BookResponse> getAllBooks() {
         List<Book> books = bookRepository.findAll();
         return books.stream()
-                .map(book -> BookResponse.fromBookEntity(book))
+                .map(BookResponse::fromBookEntity)
                 .toList();
     }
 
