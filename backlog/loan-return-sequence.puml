@@ -1,0 +1,80 @@
+@startuml
+title US-LOAN-03 — Retour (Bibliothécaire) — modèle avec mise de côté
+
+actor Bibliothécaire as B
+participant "LoanController" as C
+participant "LoanService" as S
+participant "LoanRepository" as LR
+participant "BookCopyRepository" as BCR
+box "SQL Server — base bookhub" #F5F5F5
+database "table\nloan" as TLOAN
+database "déclencheur\nsur loan" as T
+database "table\nreservation" as TRES
+database "table\nbook_copy" as TBC
+end box
+participant "GlobalExceptionHandler" as E
+
+B -> C : POST /api/loans/{id}/retour
+activate C
+note right of C : action réservée à LIBRARIAN et ADMIN\n(rôles cumulatifs, backlog § 1.2)
+C -> S : enregistrerRetour(loanId)
+activate S
+
+group @Transactional
+
+    S -> LR : findById(loanId)
+    LR --> S : emprunt ou vide
+
+    alt l'emprunt n'existe pas
+        S -> E : lève ResourceNotFoundException
+        E --> B : 404 emprunt introuvable
+
+    else l'emprunt existe
+
+        alt l'emprunt est déjà au statut RETURNED
+            note right of S : cas d'un double enregistrement\ndu même retour par le bibliothécaire
+            S -> E : lève ConflictException
+            E --> B : 409 retour déjà enregistré
+
+        else l'emprunt est actif
+
+            S -> LR : save(returnDate = aujourd'hui,\nstatut = RETURNED)
+            note right of LR : le retard éventuel se déduit de due_date,\nil n'est pas un statut (RG-LOAN-03)
+
+            LR -> TLOAN : UPDATE loan
+            TLOAN -> T : le déclencheur se déclenche
+            activate T
+            note right of T : le déclencheur part sur l'UPDATE de loan.\nIl s'exécute dans la base, ne reçoit\naucun appel de l'application et ne\nlui renvoie rien (US-RESA-03).
+
+            T -> TRES : SELECT la PENDING\nla plus ancienne de ce livre
+
+            alt aucune réservation en attente
+                T -> TRES : aucune écriture
+                note right of T : l'exemplaire redevient simplement\nempruntable par tous
+
+            else une file existe
+                T -> TRES : UPDATE le PREMIER :\nstatut = AVAILABLE,\nbook_copy_id = l'exemplaire rendu,\nnotified_at = maintenant,\npickup_deadline = notified_at + 24h
+                T -> TBC : l'exemplaire est marqué\nmis de côté
+                note right of T : seul le premier de la file est notifié.\nL'exemplaire lui est mis de côté :\naucun autre lecteur ne peut l'emprunter\npendant 24h (RG-RESA-05, mis à jour).\nLes suivants restent PENDING et\navancent d'un rang.
+            end
+
+            T --> TLOAN : déclencheur terminé
+            deactivate T
+            TLOAN --> LR : UPDATE loan terminé\n(déclencheur inclus)
+            LR --> S : emprunt mis à jour
+
+            S -> BCR : relire l'exemplaire
+            BCR --> S : book_status et réservation éventuelle
+            note right of S : le service et le déclencheur ne se parlent pas\ndirectement : ils communiquent par la BD.\nLe déclencheur écrit dans la BD, puis le service\nlit pour voir ce qu'il a fait.
+
+            S --> C : LoanResponse
+            C --> B : 200 OK
+        end
+    end
+
+end
+
+deactivate S
+deactivate C
+
+@enduml
