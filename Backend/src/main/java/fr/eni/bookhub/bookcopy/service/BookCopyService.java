@@ -6,7 +6,9 @@ import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.entity.Condition;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class BookCopyService {
 
     private final BookCopyRepository bookCopyRepository;
