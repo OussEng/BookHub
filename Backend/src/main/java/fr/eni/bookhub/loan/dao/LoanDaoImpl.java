@@ -28,4 +28,8 @@ public class LoanDaoImpl implements ILoanDao{
     public List<Loan> findByLoanerId(long loanerId) {
         return loanRepository.findByLoanerId(loanerId);
     }
+
+    public boolean existsByLoanerIdAndBookCopyLoanedBookId(long loanerId, long bookCopyLoanedBookId) {
+        return loanRepository.existsByLoanerIdAndBookCopyLoanedBookId(loanerId, bookCopyLoanedBookId);
+    }
 }
