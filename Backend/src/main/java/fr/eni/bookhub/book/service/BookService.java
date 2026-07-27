@@ -1,24 +1,19 @@
 package fr.eni.bookhub.book.service;
 
 
+import fr.eni.bookhub.book.dao.IBookDao;
 import fr.eni.bookhub.book.dto.response.BookResponse;
 import fr.eni.bookhub.book.entity.Book;
-import fr.eni.bookhub.book.repository.BookRepository;
-import fr.eni.bookhub.bookcopy.service.BookCopyService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
+@AllArgsConstructor
 @Service
 public class BookService {
 
-    private final BookRepository bookRepository;
-
-    public BookService(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
-    }
+    private final IBookDao bookRepository;
 
     public List<BookResponse> getAllBooks() {
         List<Book> books = bookRepository.findAll();
