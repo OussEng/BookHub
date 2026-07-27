@@ -9,4 +9,8 @@ public interface ILoanDao {
     List<Loan> findAll();
 
     Loan findById(long id);
+
+    void save(Loan loan);
+
+    List<Loan> findByLoanerId(long loanerId);
 }
