@@ -5,13 +5,13 @@ import { AuthService } from '../../services/auth.service';
 import { CurrentUser } from '../../interfaces/current user/current-user';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-profil',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  templateUrl: './profil.component.html',
+  styleUrl: './profil.component.css'
 })
-export class DashboardComponent implements OnInit {
+export class profilComponent implements OnInit {
   user: CurrentUser | null = null;
 
   constructor(private authService: AuthService, private router: Router) {}
@@ -24,4 +24,6 @@ export class DashboardComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+
 }
