@@ -39,6 +39,7 @@ public class LoanController {
         if (returnLoan != null) {
             return ResponseEntity.ok().body(returnLoan);
         }
+
         return ResponseEntity.ok().build();
     }
 }
