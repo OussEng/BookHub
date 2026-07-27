@@ -13,4 +13,6 @@ public interface ILoanDao {
     void save(Loan loan);
 
     List<Loan> findByLoanerId(long loanerId);
+
+    boolean existsByLoanerIdAndBookCopyLoanedBookId(long loanerId, long bookCopyLoanedBookId);
 }
