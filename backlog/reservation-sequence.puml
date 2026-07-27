@@ -4,19 +4,19 @@ title US-RESA-01 — Réserver un livre
 actor Lecteur
 participant "ReservationController" as C
 participant "ReservationService" as S
-participant "BookRepository" as BR
-participant "LoanRepository" as LR
-participant "BookCopyRepository" as BCR
-participant "ReservationRepository" as R
+participant "IBookDao" as BD
+participant "IReservationDao" as RD
+participant "ILoanDao" as LD
+participant "IBookCopyDao" as BCD
 participant "GlobalExceptionHandler" as E
 
 Lecteur -> C : POST /api/reservations\n{ bookId }
 activate C
-note right of C : l'utilisateur connecté vient du jeton JWT\nendpoint ouvert à USER, LIBRARIAN et ADMIN\n(rôles cumulatifs, backlog § 1.2)\n--\nles statuts non qualifiés sont ceux de la\nréservation ; les autres portent le nom\nde leur énumération
+note right of C : l'utilisateur connecté vient du jeton JWT\nendpoint ouvert à USER, LIBRARIAN et ADMIN\n(rôles cumulatifs)\n--\nles statuts non qualifiés sont ceux de la\nréservation ; les autres portent le nom\nde leur énumération\n--\nle service passe par les DAO, jamais\ndirectement par les repositories
 
 alt corps de requête invalide (bookId manquant ou mal typé)
     C --> Lecteur : 400 requête mal formée
-    note right of C : format vérifié avant le service :\nJackson (bibliothèque JSON utilisée par défaut\npar Spring Boot) à la désérialisation, pour le type ;\n@Valid pour les champs obligatoires.\nIdentique pour tous les endpoints ;\nn'atteint jamais la logique métier.
+    note right of C : format vérifié avant le service :\nJackson à la désérialisation, pour le type ;\n@Valid pour les champs obligatoires.\nMethodArgumentNotValidException est traduite\npar le GlobalExceptionHandler existant.\nN'atteint jamais la logique métier.
 
 else corps de requête valide
 
@@ -25,11 +25,10 @@ else corps de requête valide
 
     group @Transactional
 
-        note right of S : contrôles et écriture dans une même transaction.\nAucun verrou n'est posé sur le livre : un retour\nsimultané peut rendre un exemplaire disponible\nentre le contrôle RG-RESA-02 et l'enregistrement.\nRisque accepté : la fenêtre est étroite et la\nconséquence est une réservation de plus sur un\nlivre redevenu disponible, sans effet durable.\n--\nOrdre des contrôles, en trois temps :\n1. ce qui interdit toute réservation — le retard ;\n2. ce qui la rend inutile — un exemplaire libre ;\n3. ce qui l'interdit pour ce lecteur et ce livre —\n   plafond, emprunt en cours, doublon.
+        note right of S : contrôles et écriture dans une même transaction.\nAucun verrou n'est posé sur le livre : un retour\nsimultané peut rendre un exemplaire disponible\nentre le contrôle RG-RESA-02 et l'enregistrement.\nRisque accepté : la fenêtre est étroite et la\nconséquence est une réservation de plus sur un\nlivre redevenu disponible, sans effet durable.\n--\nOrdre des contrôles, en deux temps :\n1. ce qui rend la réservation inutile —\n   le livre n'existe pas, ou un exemplaire est libre ;\n2. ce qui l'interdit pour ce lecteur et ce livre —\n   plafond, emprunt en cours, doublon.\n--\nLe retard n'est pas contrôlé ici : il bloque\nl'emprunt (RG-LOAN-03), pas l'entrée dans la file.\nLe contrôle vit sur l'endpoint « Prendre ».
 
-
-        S -> BR : findById(bookId)
-        BR --> S : livre ou vide
+        S -> BD : findById(bookId)
+        BD --> S : livre ou vide
 
         alt le livre n'existe pas
             S -> E : lève ResourceNotFoundException
@@ -37,64 +36,54 @@ else corps de requête valide
 
         else le livre existe
 
-            S -> LR : existsByUserAndStatusAndDueDateBefore\n(user, LoanStatus.ACTIVE, aujourd'hui)
-            note right of LR : le retard se déduit de due_date,\nil n'est pas un statut (RG-LOAN-03)
-            LR --> S : true
+            S -> BCD : existsByBookIdAndBookStatus\n(bookId, BookCopyStatus.AVAILABLE)
+            BCD --> S : true
 
-            alt le lecteur a un emprunt en retard (RG-RESA-06)
+            alt un exemplaire est disponible (RG-RESA-02)
                 S -> E : lève ConflictException
-                E --> Lecteur : 409 emprunt en retard,\nrégularisez avant de réserver
+                E --> Lecteur : 409 le livre est disponible,\nempruntez-le directement
 
-            else aucun emprunt en retard
+            else tous les exemplaires sont empruntés
 
-                S -> BCR : existsByBook_IdAndBookStatus\n(bookId, BookCopyStatus.AVAILABLE)
-                BCR --> S : true
+                S -> RD : countByUserAndStatusIn\n(user, ReservationStatus.ACTIFS)
+                RD --> S : nombre de réservations actives
+                note right of RD : ACTIFS = { PENDING, AVAILABLE }\nensemble défini dans l'énumération,\nseul endroit où ces statuts sont listés
 
-                alt un exemplaire est disponible (RG-RESA-02)
+                alt déjà 5 réservations actives (RG-RESA-01)
                     S -> E : lève ConflictException
-                    E --> Lecteur : 409 le livre est disponible,\nempruntez-le directement
+                    E --> Lecteur : 409 limite de 5 réservations atteinte
 
-                else tous les exemplaires sont empruntés
+                else moins de 5
 
-                    S -> R : countByUserAndStatusIn\n(user, PENDING, AVAILABLE)
-                    R --> S : nombre de réservations actives
+                    S -> LD : existsByUserAndBookCopy_Book_IdAndStatus\n(user, bookId, LoanStatus.ACTIVE)
+                    note right of LD : l'emprunt porte sur un exemplaire :\nle livre est atteint via book_copy.\nDeux statuts seulement : ACTIVE et RETURNED.\nLe retard se déduit de due_date,\nil n'est pas un statut.
+                    LD --> S : true
 
-                    alt déjà 5 réservations actives (RG-RESA-01)
+                    alt le lecteur détient déjà ce livre (RG-RESA-04)
                         S -> E : lève ConflictException
-                        E --> Lecteur : 409 limite atteinte
+                        E --> Lecteur : 409 livre déjà emprunté
 
-                    else moins de 5
+                    else le lecteur ne détient pas ce livre
 
-                        S -> LR : existsByUserAndBookCopy_Book_IdAndStatus\n(user, bookId, LoanStatus.ACTIVE)
-                        note right of LR : l'emprunt porte sur un exemplaire :\nle livre est atteint via book_copy
-                        LR --> S : true
+                        S -> RD : existsByUserAndBookIdAndStatusIn\n(user, bookId, ReservationStatus.ACTIFS)
+                        RD --> S : true
 
-                        alt le lecteur détient déjà ce livre (RG-RESA-04)
+                        alt déjà réservé ce livre
                             S -> E : lève ConflictException
-                            E --> Lecteur : 409 livre déjà emprunté
+                            E --> Lecteur : 409 livre déjà réservé
 
-                        else le lecteur ne détient pas ce livre
+                        else pas encore réservé
 
-                            S -> R : existsByUserAndBook_IdAndStatusIn\n(user, bookId, PENDING, AVAILABLE)
-                            R --> S : true
+                            S -> RD : save(réservation PENDING,\nreserveDate = horodatage courant UTC)
+                            note right of RD : reserveDate fixe l'ordre de la file.\nHeure UTC obligatoire : le déclencheur SQL\nécrit lui aussi dans cette table.\n--\nUn index unique filtré sur (users_id, book_id)\npour les statuts actifs interdit le doublon\nen cas de double envoi : le contrôle applicatif\nne suffit pas à fermer la course.
+                            RD --> S : réservation créée
 
-                            alt déjà réservé ce livre
-                                S -> E : lève ConflictException
-                                E --> Lecteur : 409 déjà réservé
+                            S -> RD : countByBookIdAndStatusIn\n(bookId, ReservationStatus.ACTIFS)
+                            RD --> S : rang
+                            note right of RD : appelé après le save : la réservation\nvient de fermer la file, la taille de\nla file vaut donc son rang
 
-                            else pas encore réservé
-
-                                S -> R : save(réservation PENDING,\nreserveDate = horodatage courant)
-                                note right of R : reserveDate fixe l'ordre de la file.\nUn index unique filtré sur (users_id, book_id)\npour les statuts actifs interdit le doublon\nen cas de double envoi.
-                                R --> S : réservation créée
-
-                                S -> R : countByBook_IdAndStatusIn\n(bookId, PENDING, AVAILABLE)
-                                R --> S : rang
-                                note right of R : la réservation vient de fermer la file :\nson rang vaut le nombre de réservations actives
-
-                                S --> C : ReservationResponse\n(livre, date, rang, statut)
-                                C --> Lecteur : 201 Created
-                            end
+                            S --> C : ReservationResponse\n(id, bookId, date, rang, statut)
+                            C --> Lecteur : 201 Created
                         end
                     end
                 end
