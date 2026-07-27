@@ -1,14 +1,24 @@
 package fr.eni.bookhub.reservation.entity;
 
+import fr.eni.bookhub.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // requis par JPA
 @Table(name = "reservation")
 public class Reservation {
 
     @Id
+    @Setter(AccessLevel.NONE)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "reservation_id")
     private Long id;
@@ -20,5 +30,41 @@ public class Reservation {
     @Column(name = "reservation_status", nullable = false)
     private ReservationStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "users_id", nullable = false)
+    private User user;
+
+    // TODO remplacer par @ManyToOne Book quand l'entité sera disponible
+    // @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // @JoinColumn(name = "book_id", nullable = false)
+    // private Book book;
+    @Column(name = "book_id", nullable = false) // supprimer
+    private Long bookId; // supprimer
+
+
+    // TODO remplacer par @ManyToOne BookCopy quand l'entité sera disponible
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "book_copy_id")
+    // private BookCopy bookCopy;
+    @Column(name = "book_copy_id") // supprimer
+    private Long bookCopyId; // supprimer
+
+    // Renseignés au passage PENDING -> AVAILABLE, par le déclencheur SQL
+    @Column(name = "notified_at")
+    private LocalDateTime notifiedAt;
+
+    @Column(name = "pickup_deadline")
+    private LocalDateTime pickupDeadline;
+
+    // Seule façon légitime de créer une réservation : elle entre en file d'attente
+    public Reservation(User user, Long bookId) {
+        this.user = user;
+        this.bookId = bookId;
+        this.reservesDate = LocalDateTime.now();
+        this.status = ReservationStatus.PENDING;
+        // UTC obligatoire : le déclencheur SQL écrit notified_at et pickup_deadline
+        // avec l'heure du serveur. Deux origines d'heure = fenêtre de retrait décalée.
+        this.reservesDate = LocalDateTime.now(ZoneOffset.UTC);
+    }
 
 }
