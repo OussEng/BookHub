@@ -33,6 +33,16 @@ public class AuthService {
             throw new ConflictException("Email already in use");
         }
 
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new ConflictException("Username already in use");
+        }
+
+        if (userRepository.findByPhone(request.getPhone()).isPresent()) {
+            throw new ConflictException("Phone number already in use");
+        }
+
+
+
         User user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())

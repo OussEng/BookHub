@@ -1,0 +1,16 @@
+<nav class="h-[70px] relative w-full px-6 md:px-16 lg:px-24 xl:px-32 flex items-center justify-end z-30 bg-[#595C3B]  transition-all">
+<ul class="text-white flex gap-10">
+  @if(isAuthenticated()){
+
+    <li><a class="hover:text-white/70 transition" routerLink="/">Catalogue</a></li>
+    <li><a class="hover:text-white/70 transition" routerLink="/profile">Profile</a></li>
+    <li><a class="hover:text-white/70 transition" routerLink="/">Gestion</a></li>
+    <li><a class="hover:text-white/70 transition" (click)="logout()">Déconnexion</a></li>
+  
+  }
+  @else(){
+    <li><a class="hover:text-white/70 transition" routerLink="/login">Connexion</a></li>
+    <li><a class="hover:text-white/70 transition" routerLink="/register">Inscription</a></li>
+  }
+  </ul>
+</nav>
