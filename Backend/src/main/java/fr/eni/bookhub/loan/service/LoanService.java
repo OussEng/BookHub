@@ -1,5 +1,7 @@
 package fr.eni.bookhub.loan.service;
 
+import fr.eni.bookhub.bookcopy.entity.BookCopy;
+import fr.eni.bookhub.bookcopy.service.BookCopyService;
 import fr.eni.bookhub.exception.custom.ConflictException;
 import fr.eni.bookhub.loan.dao.ILoanDao;
 import fr.eni.bookhub.loan.dto.response.LoanDTO;
@@ -19,6 +21,7 @@ public class LoanService {
 
     private final ILoanDao loanRepository;
     private final AuthenticatedUserProvider authenticatedUserProvider;
+    private final BookCopyService bookCopyService;
 
     /*
     Method in charge to find all loans on database.
@@ -69,16 +72,16 @@ public class LoanService {
     Method in charge to make a new loan if the book searched isn't loan.
     @id : id of the loan you want to find.
      */
-    public void createLoan(Long bookCopyId) {
+    public void createLoan(BookCopy bookCopy) {
         User currentUser = authenticatedUserProvider.getCurrentUser();
 
-        if (bookCopyService.canBeLoaned(bookCopyId)) {
+        if (bookCopyService.canBeLoaned(bookCopy)) {
             throw new ConflictException("Book already loaned");
         }
 
         Loan newLoan = Loan.builder()
                 .loaner(currentUser)
-                .bookCopyLoaned(bookCopyService.findById(bookCopyId))
+                .bookCopyLoaned(bookCopy)
                 .loanDate(LocalDate.now())
                 .status(LoanStatus.ACTIVE)
                 .build();
