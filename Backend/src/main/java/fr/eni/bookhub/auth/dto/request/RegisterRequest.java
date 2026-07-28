@@ -1,5 +1,6 @@
 package fr.eni.bookhub.auth.dto.request;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -19,19 +20,22 @@ public class RegisterRequest {
 
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 chars")
+    @Column(unique = true)
     private String username;
 
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^\\+?[0-9]{8,15}$", message = "Please provide a valid phone number")
+    @Column(unique = true)
     private String phone;
 
     @NotBlank(message = "Email is required")
     @Size(max = 30, message = "Email must be less than 30 chars")
     @Email(message = "Please use a valid Email")
+    @Column(unique = true)
     private String email;
 
     @NotBlank(message = "Password is Required")
-    @Size(min = 8, message = "Password must be at least 8 chars")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")
+    @Size(min = 12, message = "Password must be at least 12 chars")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{12,}$", message = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")
     private String password;
 }

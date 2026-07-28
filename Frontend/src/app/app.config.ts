@@ -6,12 +6,14 @@ import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { credentialsInterceptor } from './interceptors/credentials.interceptor';
 import { AuthService } from './services/auth.service';
+import { errorInterceptor } from './interceptors/error.interceptor';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authInterceptor, credentialsInterceptor]),
+      withInterceptors([authInterceptor, credentialsInterceptor, errorInterceptor]),
       withXsrfConfiguration({
         cookieName: 'XSRF-TOKEN',
         headerName: 'X-XSRF-TOKEN'
