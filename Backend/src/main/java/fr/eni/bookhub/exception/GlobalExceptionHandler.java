@@ -1,6 +1,7 @@
 package fr.eni.bookhub.exception;
 
 import fr.eni.bookhub.exception.custom.ConflictException;
+import fr.eni.bookhub.exception.custom.LoanException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,6 +40,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<Map<String, String>> handleConflict(ConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(LoanException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(LoanException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
     }
 
