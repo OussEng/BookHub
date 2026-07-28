@@ -19,7 +19,6 @@ export class Home implements OnInit {
 
 
   ngOnInit(): void {
-    console.log("gg")
     this.bookService.getBooks().subscribe(
       {
         next: (books) =>{
@@ -30,10 +29,5 @@ export class Home implements OnInit {
       }
     )
   }
-
-
-
-  
-  
 
 }
