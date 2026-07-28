@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "bookCopies")
+@Table(name = "book_copies")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,7 +30,7 @@ public class BookCopy {
     private BookStatus bookStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "book_condition", nullable = false)
     private Condition condition;
 
 
