@@ -2,6 +2,7 @@ package fr.eni.bookhub.bookcopy.dao;
 
 
 import fr.eni.bookhub.bookcopy.entity.BookCopy;
+import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,5 +24,9 @@ public class BookCopyDaoImpl implements IBookCopyDao {
     @Override
     public List<BookCopy> findAll() {
         return bookCopyRepository.findAll();
+    }
+
+    @Override public boolean existsByBook_IdAndBookStatus(Long bookId, BookStatus bookStatus) {
+        return bookCopyRepository.existsByBook_IdAndBookStatus(bookId, bookStatus);
     }
 }

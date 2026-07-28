@@ -1,6 +1,7 @@
 package fr.eni.bookhub.bookcopy.service;
 
 
+import fr.eni.bookhub.book.dto.response.BookResponse;
 import fr.eni.bookhub.book.entity.Book;
 import fr.eni.bookhub.book.repository.BookRepository;
 import fr.eni.bookhub.bookcopy.dto.request.CreateBookCopyRequest;
@@ -10,6 +11,8 @@ import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.entity.Condition;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -51,5 +54,12 @@ public class BookCopyService {
         BookCopy savedCopy = bookCopyRepository.save(copy);
 
         return BookCopyResponse.fromBookCopyEntity(savedCopy);
+    }
+
+    public List<BookCopyResponse> getCopiesByBookId(Long bookId) {
+        List<BookCopy> copies = bookCopyRepository.findByBookId(bookId);
+        return copies.stream()
+                .map(BookCopyResponse::fromBookCopyEntity)
+                .toList();
     }
 }
