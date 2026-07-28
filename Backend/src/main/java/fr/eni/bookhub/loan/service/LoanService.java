@@ -1,6 +1,7 @@
 package fr.eni.bookhub.loan.service;
 
 import fr.eni.bookhub.bookcopy.entity.BookCopy;
+import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
 import fr.eni.bookhub.bookcopy.service.BookCopyService;
 import fr.eni.bookhub.exception.custom.LoanException;
@@ -81,9 +82,17 @@ public class LoanService {
     Method in charge to make a new loan if the book searched isn't loan.
     @id : id of the book copy you want to loan.
      */
-    public void createLoan(Long id) {
+    public void createLoan(Long bookId) {
         User currentUser = authenticatedUserProvider.getCurrentUser();
-        BookCopy bookCopy = bookCopyRepository.findById(id).orElseThrow(() -> new LoanException("Book Copy not found"));
+        List<BookCopy> bookCopyFoundList = bookCopyRepository.findByBookIdAndBookStatus(bookId, BookStatus.AVAILABLE);
+        int listSize = bookCopyFoundList.size();
+        System.out.println(bookCopyFoundList);
+
+        if (listSize == 0) {
+            throw new LoanException("Book copy not available");
+        }
+
+        BookCopy bookCopy = bookCopyFoundList.get(listSize - 1);
 
         if (!bookCopyService.canBeLoaned(bookCopy)) {
             throw new LoanException("Book already loaned");
@@ -93,13 +102,15 @@ public class LoanService {
             throw new LoanException("Maximum books limit reached");
         }
 
+        bookCopy.setBookStatus(BookStatus.LOANED);
+        bookCopyRepository.save(bookCopy);
+
         Loan newLoan = Loan.builder()
                 .loaner(currentUser)
                 .bookCopyLoaned(bookCopy)
                 .loanDate(LocalDate.now())
                 .status(LoanStatus.ACTIVE)
                 .build();
-
         loanRepository.save(newLoan);
     }
 
