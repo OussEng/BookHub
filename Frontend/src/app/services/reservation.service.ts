@@ -15,7 +15,8 @@ export class ReservationService {
   }
 
   mesReservations(): Observable<ReservationResponse[]> {
-    return this.http.get<ReservationResponse[]>(`${this.apiUrl}/me`);
+    return this.http.get<ReservationResponse[]>(`${this.apiUrl}/my`);
+
   }
 
   annuler(id: number): Observable<void> {
