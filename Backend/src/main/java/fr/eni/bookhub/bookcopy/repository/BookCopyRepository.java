@@ -11,4 +11,5 @@ import java.util.List;
 public interface BookCopyRepository extends JpaRepository<BookCopy, Long> {
     List<BookCopy> findByBookId(Long bookId);
     boolean existsByBook_IdAndBookStatus(Long bookId, BookStatus bookStatus);
+    List<BookCopy> findByBookIdAndBookStatus(Long bookId, BookStatus bookStatus);
 }

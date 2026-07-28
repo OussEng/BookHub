@@ -29,4 +29,9 @@ public class BookCopyDaoImpl implements IBookCopyDao {
     @Override public boolean existsByBook_IdAndBookStatus(Long bookId, BookStatus bookStatus) {
         return bookCopyRepository.existsByBook_IdAndBookStatus(bookId, bookStatus);
     }
+
+    @Override
+    public List<BookCopy> findByBookIdAndBookStatus(Long bookId, BookStatus bookStatus){
+        return bookCopyRepository.findByBookIdAndBookStatus(bookId, bookStatus);
+    }
 }

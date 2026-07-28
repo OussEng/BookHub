@@ -12,5 +12,6 @@ public interface IBookCopyDao {
     Optional<BookCopy> findById(Long id);
     List<BookCopy> findAll();
     boolean existsByBook_IdAndBookStatus(Long bookId, BookStatus bookStatus);
+    List<BookCopy> findByBookIdAndBookStatus(Long bookId, BookStatus bookStatus);
 
 }
