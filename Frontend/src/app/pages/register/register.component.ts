@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -18,16 +18,20 @@ export class RegisterComponent {
   phone = '';
   email = '';
   password = '';
-  errorMessage = '';
-  successMessage = '';
-  isLoading = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  errorMessage = signal('');
+  successMessage = signal('');
+  isLoading = signal(false);
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   onSubmit(): void {
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.isLoading = true;
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.isLoading.set(true);
 
     this.authService.register({
       username: this.username,
@@ -38,15 +42,19 @@ export class RegisterComponent {
       password: this.password
     }).subscribe({
       next: () => {
-        this.isLoading = false;
-        this.successMessage = 'Account created. Redirecting to login...';
+        this.isLoading.set(false);
+        this.successMessage.set('Account created. Redirecting to login...');
+
         setTimeout(() => this.router.navigate(['/login']), 1200);
       },
       error: (err) => {
-        this.isLoading = false;
-        this.errorMessage = err.status === 409
-          ? 'An account with this email already exists.'
-          : 'Something went wrong. Please try again.';
+        this.isLoading.set(false);
+
+        this.errorMessage.set(
+          err.status === 409
+            ? err.error.error
+            : 'Something went wrong. Please try again.'
+        );
       }
     });
   }
