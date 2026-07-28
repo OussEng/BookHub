@@ -37,4 +37,8 @@ public class LoanDaoImpl implements ILoanDao{
     public int countByLoanerIdAndStatus(long loanerId, LoanStatus status) {
         return loanRepository.countByLoanerIdAndStatus(loanerId, status);
     }
+
+    public boolean existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(long loanerId, long bookCopyLoanedBookId, LoanStatus status) {
+        return loanRepository.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(loanerId, bookCopyLoanedBookId, status);
+    }
 }
