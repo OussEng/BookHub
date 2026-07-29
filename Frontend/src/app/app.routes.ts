@@ -20,5 +20,6 @@ export const routes: Routes = [
   { path: 'backoffice/librarian', component: LibrarianHome, title : 'Espace bibliothécaire', canActivate: [LibrarianGuard]},
   { path: 'backoffice/librarian/books', component: LibrarianBookCatalogue, title : 'Catalogue BookHub', canActivate: [LibrarianGuard]},
   { path: 'backoffice/librarian/books/copies/:id', component: LibrarianBookCopies, title : 'Catalogue BookHub', canActivate: [LibrarianGuard]},
+
   { path: '**', redirectTo: 'login' }
 ];
