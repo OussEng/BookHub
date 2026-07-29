@@ -18,7 +18,7 @@ export class BookService {
 
     getBooks(): Observable<Book[]> {
 
-    return this.http.get<Book[]>(this.apiUrl + '/all');
+    return this.http.get<Book[]>(this.apiUrl);
 
   }
 
