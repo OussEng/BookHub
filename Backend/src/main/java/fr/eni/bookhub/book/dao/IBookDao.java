@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface IBookDao {
     Optional<Book> findById(Long id);
     List<Book> findAll();
+    boolean existsById(Long id);
 }

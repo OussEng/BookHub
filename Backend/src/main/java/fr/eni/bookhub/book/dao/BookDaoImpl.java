@@ -23,4 +23,9 @@ public class BookDaoImpl implements IBookDao {
     public List<Book> findAll() {
         return bookRepository.findAll();
     }
+
+    @Override
+    public boolean existsById(Long id) {
+        return bookRepository.existsById(id);
+    }
 }
