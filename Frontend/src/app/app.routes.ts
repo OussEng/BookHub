@@ -6,6 +6,7 @@ import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { Home } from './pages/home/home/home';
 import { BookDetails } from './pages/book-details/book-details';
+import { MesReservations } from './pages/mes-reservations/mes-reservations';
 
 export const routes: Routes = [
   { path: '', component: Home, canActivate:[authGuard] },
@@ -13,6 +14,7 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent, title: 'Inscription', canActivate:[guestGuard] },
   { path: 'profile', component: profilComponent, canActivate: [authGuard] },
   { path: 'book/:id', component: BookDetails, canActivate: [authGuard] },
+  { path: 'mes-reservations', component: MesReservations, title: 'Mes réservations', canActivate: [authGuard] },
 
   { path: '**', redirectTo: 'login' }
 ];
