@@ -31,5 +31,9 @@ export class BookService {
   }
 
 
+  createBookWithImage(formData: FormData): Observable<Book> {
+  return this.http.post<Book>(this.apiUrl, formData);
+}
+
 
 }

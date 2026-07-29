@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BookCopy } from '../../interfaces/book-copy/book-copy';
+import { CreateBookCopyDto } from '../../interfaces/book-copy/book-copy-create';
+
 
 
 @Injectable({ providedIn: 'root' })
@@ -12,15 +14,15 @@ export class BookCopyService {
   constructor(private http: HttpClient) {}
 
   getBookCopiesByBookId(bookId: number): Observable<BookCopy[]> {
-    return this.http.get<BookCopy[]>(`${this.apiUrl}/book/${bookId}`);
+    return this.http.get<BookCopy[]>(`${this.apiUrl}/by-book/${bookId}`);
   }
 
   getBookCopyById(id: number): Observable<BookCopy> {
     return this.http.get<BookCopy>(`${this.apiUrl}/${id}`);
   }
 
-  createBookCopy(copyData: any): Observable<BookCopy> {
-    return this.http.post<BookCopy>(this.apiUrl, copyData);
+  
+  createBookCopy(copyData: CreateBookCopyDto): Observable<BookCopy> {
+    return this.http.post<BookCopy>(`${this.apiUrl}/create`, copyData);
   }
-
 }

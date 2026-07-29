@@ -13,7 +13,7 @@
   <section class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-10">
     <div class="grid grid-cols-1 md:grid-cols-[auto,1fr,auto] gap-6 items-center">
       
-      <button class="bg-[#585942] text-white h-24 w-48 rounded-3xl flex items-center justify-center text-xl font-light tracking-wide hover:bg-opacity-90 transition duration-150 shadow-md">
+      <button (click)="openNewBookModal()" class="bg-[#585942] text-white h-24 w-48 rounded-3xl flex items-center justify-center text-xl font-light tracking-wide hover:bg-opacity-90 transition duration-150 shadow-md">
         Nouvel exemplaire
       </button>
 
@@ -46,10 +46,6 @@
     @if (isLoading()) {
       <div class="py-12 text-center text-slate-500 font-light">
         Chargement des exemplaires...
-      </div>
-    } @else if (errorMessage) {
-      <div class="py-12 text-center text-red-500 font-light">
-        {{ errorMessage }}
       </div>
     } @else {
       <div class="overflow-x-auto">

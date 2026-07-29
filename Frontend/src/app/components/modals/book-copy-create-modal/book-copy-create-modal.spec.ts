@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Catalog } from './catalog';
+import { BookCopyCreateModal } from './book-copy-create-modal';
 
-describe('Catalog', () => {
-  let component: Catalog;
-  let fixture: ComponentFixture<Catalog>;
+describe('BookCopyCreateModal', () => {
+  let component: BookCopyCreateModal;
+  let fixture: ComponentFixture<BookCopyCreateModal>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Catalog]
+      imports: [BookCopyCreateModal]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Catalog);
+    fixture = TestBed.createComponent(BookCopyCreateModal);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

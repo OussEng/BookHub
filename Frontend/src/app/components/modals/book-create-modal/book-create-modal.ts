@@ -28,7 +28,7 @@ export class BookCreateModal implements OnInit {
     genres: [[], Validators.required],
     isbn: ['', Validators.required],
     description: [''],
-    publishDate: [new Date().toISOString().split('T')[0]]
+    publishDate: [new Date().toISOString().split('T')[0], Validators.required]
   });
 
   ngOnInit(): void {

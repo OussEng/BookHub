@@ -15,6 +15,7 @@ export class Home implements OnInit {
 
   protected books = signal<Book[]>([]);
   protected isLoading = signal<boolean>(true);
+  defaultCoverUrl = 'assets/images/default.png';
 
 
 
@@ -28,6 +29,11 @@ export class Home implements OnInit {
         } 
       }
     )
+  }
+
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = this.defaultCoverUrl;
   }
 
 }

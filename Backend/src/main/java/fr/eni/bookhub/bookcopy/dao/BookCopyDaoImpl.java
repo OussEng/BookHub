@@ -34,4 +34,21 @@ public class BookCopyDaoImpl implements IBookCopyDao {
     public List<BookCopy> findByBookIdAndBookStatus(Long bookId, BookStatus bookStatus){
         return bookCopyRepository.findByBookIdAndBookStatus(bookId, bookStatus);
     }
+
+    @Override
+    public List<BookCopy> findByBookId(Long bookId) {
+        return bookCopyRepository.findByBookId(bookId);
+    }
+
+    @Override
+    public Optional<BookCopy> findBySerialNumber(String serialNumber) {
+        return bookCopyRepository.findBySerialNumber(serialNumber);
+    }
+
+    @Override
+    public BookCopy save(BookCopy bookCopy) {
+        return bookCopyRepository.save(bookCopy);
+    }
+
+
 }

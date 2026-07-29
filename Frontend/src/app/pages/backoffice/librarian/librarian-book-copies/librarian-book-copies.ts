@@ -6,17 +6,24 @@ import { BookCopyService } from '../../../../services/book-copy/book-copy.servic
 import { BookCopy } from '../../../../interfaces/book-copy/book-copy';
 import { BookCondition } from '../../../../interfaces/book-copy/book-copy-condition';
 import { BookStatus } from '../../../../interfaces/book-copy/book-copy-status';
+import { BookCopyCreateModal } from '../../../../components/modals/book-copy-create-modal/book-copy-create-modal';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { CreateBookCopyDto } from '../../../../interfaces/book-copy/book-copy-create';
+import { FlashMessageService } from '../../../../services/flash-message-service/flash-message-service';
+
 
 @Component({
   selector: 'app-librarian-book-copies',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MatDialogModule],
   templateUrl: './librarian-book-copies.html',
   styleUrl: './librarian-book-copies.css',
 })
 export class LibrarianBookCopies {
   private bookService = inject(BookService);
   private bookCopyService = inject(BookCopyService); 
+  private dialog = inject(MatDialog);
+  private flashService = inject(FlashMessageService);
 
   id = input.required<string>();
 
@@ -28,7 +35,7 @@ export class LibrarianBookCopies {
   ngOnInit() {
     const bookId = Number(this.id());
 
-    /*
+  
     this.bookService.getBookById(bookId).subscribe({
       next: (data) => {
         this.book = data;
@@ -50,37 +57,35 @@ export class LibrarianBookCopies {
         console.error(err);
       }
     });
-    */
-
-    setTimeout(() => {
-      this.book = {
-        id: bookId,
-        title: 'Les Misérables',
-        author: ['Victor Hugo'],
-        genres: ['Roman'],
-        isbn: '978-2070409181'
-      };
-
-      this.copies.set([
-        {
-          id: 1,
-          serialNumber: 'SN-987654-01',
-          condition: BookCondition.GOOD,
-          bookId: bookId,
-          isAvailable: true,
-          bookStatus: BookStatus.AVAILABLE
-        },
-        {
-          id: 2,
-          serialNumber: 'SN-987654-02',
-          condition: BookCondition.GOOD,
-          bookId: bookId,
-          isAvailable: false,
-          bookStatus: BookStatus.LOANED
-        }
-      ]);
-
-      this.isLoading.set(false);
-    }, 400);
   }
+
+
+  openNewBookModal(): void {
+      const dialogRef = this.dialog.open(BookCopyCreateModal, {
+        width: '500px',
+        data: {}
+      });
+  
+      dialogRef.afterClosed().subscribe((formData) => {
+      if (formData) {
+        const payload: CreateBookCopyDto = {
+          ...formData,
+          bookId: this.id(),
+        };
+      
+        this.bookCopyService.createBookCopy(payload).subscribe({
+          next: (createdCopy) => {
+            this.copies.update((current) => [...current, createdCopy]);
+
+            this.flashService.success("Exemplaire créé avec succès !")
+
+          },
+          error: (err) => {
+            this.errorMessage = "Impossible de créer l'exemplaire.";
+            console.error(err);
+          },
+        });
+      }
+    });
+}
 }

@@ -1,0 +1,56 @@
+<div class="p-6 bg-[#FBF7E7] text-slate-900 rounded-[2rem] max-w-lg w-full">
+  <h2 class="font-serif text-3xl font-normal text-slate-950 mb-6 text-center">Nouvel exemplaire</h2>
+
+  <form [formGroup]="copyForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+    
+    
+    <div class="relative">
+      <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">
+        Numéro de série
+      </label>
+      <input 
+        type="text" 
+        formControlName="serialNumber" 
+        placeholder="EX-2026-XXXX"
+        class="w-full h-12 px-4 bg-white border border-slate-300 rounded-full focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition"
+      >
+    </div>
+
+    
+    <div class="relative">
+      <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">
+        État du livre
+      </label>
+      <select 
+        formControlName="condition" 
+        class="w-full h-12 px-4 bg-white border border-slate-300 rounded-full appearance-none focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition text-sm"
+      >
+        @for (cond of conditions; track cond) {
+          <option [value]="cond">{{ cond }}</option>
+        }
+      </select>
+      <svg class="w-5 h-5 absolute right-4 top-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </div>
+
+    
+    <div class="flex justify-end gap-3 mt-4">
+      <button 
+        type="button" 
+        (click)="onCancel()" 
+        class="px-6 py-2.5 rounded-full text-xs font-light tracking-wide border border-slate-400 hover:bg-slate-100 transition"
+      >
+        Annuler
+      </button>
+      <button 
+        type="submit" 
+        [disabled]="copyForm.invalid" 
+        class="bg-[#585942] text-white px-6 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-opacity-90 transition shadow-sm disabled:opacity-50"
+      >
+        Enregistrer
+      </button>
+    </div>
+
+  </form>
+</div>
