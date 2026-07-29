@@ -6,4 +6,5 @@ export interface ReservationResponse {
     reservesDate: string;
     rank: number;
     status: ReservationStatus;
+    pickupDeadline: string | null;
 }
