@@ -4,12 +4,13 @@ import fr.eni.bookhub.loan.entity.Loan;
 import fr.eni.bookhub.loan.entity.LoanStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ILoanDao {
 
     List<Loan> findAll();
 
-    Loan findById(long id);
+    Optional<Loan> findById(long id);
 
     void save(Loan loan);
 

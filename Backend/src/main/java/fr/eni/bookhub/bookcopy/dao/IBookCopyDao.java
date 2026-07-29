@@ -14,4 +14,5 @@ public interface IBookCopyDao {
     boolean existsByBook_IdAndBookStatus(Long bookId, BookStatus bookStatus);
     List<BookCopy> findByBookIdAndBookStatus(Long bookId, BookStatus bookStatus);
     BookCopy save(BookCopy bookCopy);
+    int changeStatus(Long bookCopyId, Long bookId, BookStatus fromStatus, BookStatus toStatus);
 }

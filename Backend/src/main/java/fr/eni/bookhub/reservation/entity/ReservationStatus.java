@@ -9,7 +9,7 @@ public enum ReservationStatus {
 
     PENDING, // En file d'attente
     AVAILABLE, // Exemplaire mis de côté, 72h pour cliquer
-    FULFILLED, // Emprunté : la réservation devient un emprunt
+    FULFILLED, // L'utilisateur a cliqué sur "emprunter"
     CANCELLED, // Annulée avant le retrait
     EXPIRED; // Délai de 72h écoulé
 

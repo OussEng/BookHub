@@ -39,4 +39,9 @@ public class BookCopyDaoImpl implements IBookCopyDao {
     public BookCopy save(BookCopy bookCopy) {
         return bookCopyRepository.save(bookCopy);
     }
+
+    @Override
+    public int changeStatus(Long bookCopyId, Long bookId, BookStatus fromStatus, BookStatus toStatus) {
+        return bookCopyRepository.changeStatus(bookCopyId, bookId, fromStatus, toStatus);
+    }
 }

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Optional;
 
 // Délégation pure vers Spring Data : aucune règle métier ici, elle vit dans le service
 @Component
@@ -39,5 +40,15 @@ public class ReservationDaoImpl implements IReservationDao {
     @Override
     public long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuts) {
         return reservationRepository.countByBookIdAndStatusIn(bookId, statuts);
+    }
+
+    @Override
+    public Optional<Reservation> findFirstByBookIdAndStatusOrderByReservesDateAsc(Long bookId, ReservationStatus status) {
+        return reservationRepository.findFirstByBookIdAndStatusOrderByReservesDateAsc(bookId, status);
+    }
+
+    @Override
+    public boolean existsByBookCopyIdAndStatus(Long bookCopyId, ReservationStatus reservationStatus) {
+        return reservationRepository.existsByBookCopyIdAndStatus(bookCopyId, reservationStatus);
     }
 }

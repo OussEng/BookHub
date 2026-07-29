@@ -27,7 +27,7 @@ public class ReservationResponse {
     public static ReservationResponse fromEntity(Reservation reservation, long rank) {
         return new ReservationResponse(
                 reservation.getId(),
-                reservation.getBookId(),
+                reservation.getBook().getId(),
                 reservation.getReservesDate(),
                 rank,
                 reservation.getStatus()

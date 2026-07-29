@@ -5,6 +5,7 @@ import fr.eni.bookhub.reservation.entity.ReservationStatus;
 import fr.eni.bookhub.user.entity.User;
 
 import java.util.Collection;
+import java.util.Optional;
 
 public interface IReservationDao {
 
@@ -19,4 +20,10 @@ public interface IReservationDao {
 
     // Taille de la file du livre, égale au rang de la réservation qui vient d'être créée
     long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuts);
+
+    Optional<Reservation> findFirstByBookIdAndStatusOrderByReservesDateAsc(
+            Long bookId,
+            ReservationStatus status);
+
+    boolean existsByBookCopyIdAndStatus(Long bookCopyId, ReservationStatus reservationStatus);
 }

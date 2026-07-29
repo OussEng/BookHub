@@ -1,5 +1,7 @@
 package fr.eni.bookhub.reservation.entity;
 
+import fr.eni.bookhub.book.entity.Book;
+import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -35,19 +37,19 @@ public class Reservation {
     private User user;
 
     // TODO remplacer par @ManyToOne Book quand l'entité sera disponible
-    // @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    // @JoinColumn(name = "book_id", nullable = false)
-    // private Book book;
-    @Column(name = "book_id", nullable = false) // supprimer
-    private Long bookId; // supprimer
+     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+     @JoinColumn(name = "book_id", nullable = false)
+     private Book book;
+//    @Column(name = "book_id", nullable = false) // supprimer
+//    private Long bookId; // supprimer
 
 
     // TODO remplacer par @ManyToOne BookCopy quand l'entité sera disponible
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "book_copy_id")
-    // private BookCopy bookCopy;
-    @Column(name = "book_copy_id") // supprimer
-    private Long bookCopyId; // supprimer
+     @ManyToOne(fetch = FetchType.LAZY)
+     @JoinColumn(name = "book_copy_id")
+     private BookCopy bookCopy;
+//    @Column(name = "book_copy_id") // supprimer
+//    private Long bookCopyId; // supprimer
 
     // Renseignés au passage PENDING -> AVAILABLE, par le déclencheur SQL
     @Column(name = "notified_at")
@@ -57,9 +59,9 @@ public class Reservation {
     private LocalDateTime pickupDeadline;
 
     // Seule façon légitime de créer une réservation : elle entre en file d'attente
-    public Reservation(User user, Long bookId) {
+    public Reservation(User user, Book book) {
         this.user = user;
-        this.bookId = bookId;
+        this.book = book;
         this.reservesDate = LocalDateTime.now();
         this.status = ReservationStatus.PENDING;
         // UTC obligatoire : le déclencheur SQL écrit notified_at et pickup_deadline
