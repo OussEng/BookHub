@@ -27,7 +27,7 @@ public class Loan {
 
     private LocalDate returnDate;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LoanStatus status;
 

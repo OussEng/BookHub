@@ -33,13 +33,7 @@ public class LoanController {
 
     @PutMapping("/{id}/return") // En tant que LIBRARIAN
     public ResponseEntity<LoanDTO> returnLoans(@PathVariable Long id) {
-
-        LoanDTO returnLoan = loanService.returnLoan(id);
-
-        if (returnLoan != null) {
-            return ResponseEntity.ok().body(returnLoan);
-        }
-
+        loanService.returnLoan(id);
         return ResponseEntity.ok().build();
     }
 }

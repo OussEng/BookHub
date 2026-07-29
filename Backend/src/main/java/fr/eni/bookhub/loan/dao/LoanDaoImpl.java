@@ -1,6 +1,7 @@
 package fr.eni.bookhub.loan.dao;
 
 import fr.eni.bookhub.loan.entity.Loan;
+import fr.eni.bookhub.loan.entity.LoanStatus;
 import fr.eni.bookhub.loan.repository.LoanRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,5 +32,13 @@ public class LoanDaoImpl implements ILoanDao{
 
     public boolean existsByLoanerIdAndBookCopyLoanedBookId(long loanerId, long bookCopyLoanedBookId) {
         return loanRepository.existsByLoanerIdAndBookCopyLoanedBookId(loanerId, bookCopyLoanedBookId);
+    }
+
+    public int countByLoanerIdAndStatus(long loanerId, LoanStatus status) {
+        return loanRepository.countByLoanerIdAndStatus(loanerId, status);
+    }
+
+    public boolean existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(long loanerId, long bookCopyLoanedBookId, LoanStatus loanStatus) {
+        return loanRepository.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(loanerId, bookCopyLoanedBookId, loanStatus);
     }
 }

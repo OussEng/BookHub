@@ -4,11 +4,15 @@ import { RegisterComponent } from './pages/register/register.component';
 import { profilComponent } from './pages/profil/profil.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+import { Home } from './pages/home/home/home';
+import { BookDetails } from './pages/book-details/book-details';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', component: Home, canActivate:[authGuard] },
   { path: 'login', component: LoginComponent, title: 'Connexion', canActivate:[guestGuard] },
   { path: 'register', component: RegisterComponent, title: 'Inscription', canActivate:[guestGuard] },
   { path: 'profile', component: profilComponent, canActivate: [authGuard] },
+  { path: 'book/:id', component: BookDetails, canActivate: [authGuard] },
+
   { path: '**', redirectTo: 'login' }
 ];
