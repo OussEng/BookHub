@@ -4,6 +4,7 @@ import { RegisterComponent } from './pages/register/register.component';
 import { profilComponent } from './pages/profil/profil.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+
 import { Home } from './pages/home/home/home';
 import { BookDetails } from './pages/book-details/book-details';
 import { LibrarianHome } from './pages/backoffice/librarian/librarian-home/librarian-home';
@@ -20,6 +21,5 @@ export const routes: Routes = [
   { path: 'backoffice/librarian', component: LibrarianHome, title : 'Espace bibliothécaire', canActivate: [LibrarianGuard]},
   { path: 'backoffice/librarian/books', component: LibrarianBookCatalogue, title : 'Catalogue BookHub', canActivate: [LibrarianGuard]},
   { path: 'backoffice/librarian/books/copies/:id', component: LibrarianBookCopies, title : 'Catalogue BookHub', canActivate: [LibrarianGuard]},
-
   { path: '**', redirectTo: 'login' }
 ];
