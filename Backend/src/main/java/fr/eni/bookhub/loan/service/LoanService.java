@@ -1,5 +1,6 @@
 package fr.eni.bookhub.loan.service;
 
+import fr.eni.bookhub.bookcopy.dao.IBookCopyDao;
 import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
@@ -24,7 +25,7 @@ public class LoanService {
     private final ILoanDao loanRepository;
     private final AuthenticatedUserProvider authenticatedUserProvider;
     private final BookCopyService bookCopyService;
-    private final BookCopyRepository bookCopyRepository;
+    private final IBookCopyDao bookCopyRepository;
 
 
 // --- CRUD ---
@@ -149,9 +150,6 @@ public class LoanService {
         LocalDate dateEmprunt = loan.getLoanDate();
         LocalDate dateReturn = dateEmprunt.plusDays(14);
 
-        if (loan.getReturnDate().isAfter(dateReturn)) {
-            return true;
-        }
-        return false;
+        return loan.getReturnDate().isAfter(dateReturn);
     }
 }
