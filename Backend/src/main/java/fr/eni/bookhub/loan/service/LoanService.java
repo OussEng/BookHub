@@ -3,7 +3,6 @@ package fr.eni.bookhub.loan.service;
 import fr.eni.bookhub.bookcopy.dao.IBookCopyDao;
 import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
-import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
 import fr.eni.bookhub.bookcopy.service.BookCopyService;
 import fr.eni.bookhub.exception.custom.LoanException;
 import fr.eni.bookhub.loan.dao.ILoanDao;
@@ -13,13 +12,16 @@ import fr.eni.bookhub.loan.entity.LoanStatus;
 import fr.eni.bookhub.security.AuthenticatedUserProvider;
 import fr.eni.bookhub.user.entity.User;
 import lombok.AllArgsConstructor;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
+@EnableMethodSecurity
 public class LoanService {
 
     private final ILoanDao loanRepository;
@@ -83,6 +85,7 @@ public class LoanService {
     Method in charge to make a new loan if the book searched isn't loan.
     @id : id of the book copy you want to loan.
      */
+    @Transactional
     public void createLoan(Long bookId) {
         User currentUser = authenticatedUserProvider.getCurrentUser();
         List<BookCopy> bookCopyFoundList = bookCopyRepository.findByBookIdAndBookStatus(bookId, BookStatus.AVAILABLE);
@@ -99,7 +102,7 @@ public class LoanService {
             throw new LoanException("Book already loaned");
         }
 
-        if (loanRepository.countByLoanerIdAndStatus(currentUser.getId(), LoanStatus.ACTIVE) >= 5) {
+        if (loanRepository.countByLoanerIdAndStatus(currentUser.getId(), LoanStatus.ACTIVE) >= 3) {
             throw new LoanException("Maximum books limit reached");
         }
 
@@ -110,6 +113,7 @@ public class LoanService {
                 .loaner(currentUser)
                 .bookCopyLoaned(bookCopy)
                 .loanDate(LocalDate.now())
+                .dueDate(LocalDate.now().plusDays(14))
                 .status(LoanStatus.ACTIVE)
                 .build();
         loanRepository.save(newLoan);
@@ -119,8 +123,10 @@ public class LoanService {
     Method in charge to declare to return a loan when the book return to the library.
     @id : id of the loan you want to close.
      */
+    @Transactional
     public void returnLoan(Long loanId) {
         Loan loanFound = this.getLoanEntityById(loanId);
+        BookCopy bookCopyFound = loanFound.getBookCopyLoaned();
 
         if (loanFound == null) {
             throw new LoanException("Loan not found");
@@ -130,14 +136,12 @@ public class LoanService {
             throw new LoanException("Loan already returned");
         }
 
-        if (this.IsLoanReturnDelayed(loanFound)) {
-            loanFound.setDueDate(LocalDate.now());
-        }
-
         loanFound.setReturnDate(LocalDate.now());
         loanFound.setStatus(LoanStatus.RETURN);
         loanRepository.save(loanFound);
 
+        bookCopyFound.setBookStatus(BookStatus.AVAILABLE);
+        bookCopyRepository.save(bookCopyFound);
     }
 
 // --- Utils ---
@@ -147,9 +151,6 @@ public class LoanService {
     @loan Object Loan you want to test.
      */
     public boolean IsLoanReturnDelayed(Loan loan) {
-        LocalDate dateEmprunt = loan.getLoanDate();
-        LocalDate dateReturn = dateEmprunt.plusDays(14);
-
-        return loan.getReturnDate().isAfter(dateReturn);
+        return LocalDate.now().isAfter(loan.getDueDate());
     }
 }

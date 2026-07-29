@@ -4,6 +4,7 @@ import fr.eni.bookhub.loan.dto.response.LoanDTO;
 import fr.eni.bookhub.loan.service.LoanService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public class LoanController {
 
     private final LoanService loanService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @GetMapping("")
     public ResponseEntity<List<LoanDTO>> findAll() {
         return ResponseEntity.ok().body(loanService.findAll());
@@ -31,9 +33,10 @@ public class LoanController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}/return") // En tant que LIBRARIAN
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
+    @PutMapping("/{id}/return")
     public ResponseEntity<LoanDTO> returnLoans(@PathVariable Long id) {
         loanService.returnLoan(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
