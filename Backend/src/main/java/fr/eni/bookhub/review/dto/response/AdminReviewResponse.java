@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class ReviewResponse {
+public class AdminReviewResponse {
 
     private final Long id;
     private final String username;
@@ -19,25 +19,23 @@ public class ReviewResponse {
     private final boolean moderated;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
+    private final LocalDateTime moderatedAt;
 
-    public static ReviewResponse fromEntity(Review review) {
-        boolean isModerated = review.getStatus() == ReviewStatus.MODERATED;
+    public static AdminReviewResponse fromEntity(Review review) {
         String username = review.getUser().getDisplayUsername();
         String firstname = review.getUser().getFirstname();
         String lastname = review.getUser().getLastname();
-        String initial = lastname != null && !lastname.isBlank()
-                ? lastname.substring(0, 1).toUpperCase() + "."
-                : "";
 
-        return ReviewResponse.builder()
+        return AdminReviewResponse.builder()
                 .id(review.getId())
-                .username(username != null ? username : (firstname + " " + initial).trim())
+                .username(username != null ? username : (firstname + " " + lastname).trim())
                 .bookId(review.getBook().getId())
                 .rating(review.getRating())
-                .comment(isModerated ? null : review.getComment())
-                .moderated(isModerated)
+                .comment(review.getComment())
+                .moderated(review.getStatus() == ReviewStatus.MODERATED)
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
+                .moderatedAt(review.getModeratedAt())
                 .build();
     }
 }

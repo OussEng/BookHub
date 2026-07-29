@@ -8,6 +8,7 @@ import fr.eni.bookhub.loan.dao.ILoanDao;
 import fr.eni.bookhub.loan.entity.LoanStatus;
 import fr.eni.bookhub.review.dao.IReviewDao;
 import fr.eni.bookhub.review.dto.request.ReviewRequest;
+import fr.eni.bookhub.review.dto.response.AdminReviewResponse;
 import fr.eni.bookhub.review.dto.response.ReviewResponse;
 import fr.eni.bookhub.review.entity.Review;
 import fr.eni.bookhub.review.entity.ReviewStatus;
@@ -56,7 +57,7 @@ public class ReviewService {
                 .book(book)
                 .build();
 
-        return ReviewResponse.fromUserEntity(reviewDao.save(review));
+        return ReviewResponse.fromEntity(reviewDao.save(review));
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -86,7 +87,7 @@ public class ReviewService {
         review.setRating(request.getRating());
         review.setComment(request.getComment());
 
-        return ReviewResponse.fromUserEntity(reviewDao.save(review));
+        return ReviewResponse.fromEntity(reviewDao.save(review));
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -124,13 +125,13 @@ public class ReviewService {
         }
 
         Page<Review> reviews = reviewDao.findByBookId(bookId, pageable);
-        return reviews.map(ReviewResponse::fromUserEntity);
+        return reviews.map(ReviewResponse::fromEntity);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
-    public Page<ReviewResponse> getAllReviews(Pageable pageable) {
+    public Page<AdminReviewResponse> getAllReviews(Pageable pageable) {
         Page<Review> reviews = reviewDao.findAll(pageable);
-        return reviews.map(ReviewResponse::fromUserEntity);
+        return reviews.map(AdminReviewResponse::fromEntity);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
