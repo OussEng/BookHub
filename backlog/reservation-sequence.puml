@@ -48,7 +48,7 @@ else corps de requête valide
 
                 S -> RD : countByUserAndStatusIn\n(user, ReservationStatus.ACTIFS)
                 RD --> S : nombre de réservations actives
-                note right of RD : ACTIFS = { PENDING, AVAILABLE }\nensemble défini dans l'énumération,\nseul endroit où ces statuts sont listés
+                note right of RD : ACTIFS = { PENDING, AVAILABLE }\nensemble défini dans l'énumération,\nseul endroit où ces statuts sont listés\n--\nCompté sur le LECTEUR, pas sur le livre :\nRG-RESA-01 plafonne les réservations d'un\nlecteur, pas la longueur de la file.
 
                 alt déjà 5 réservations actives (RG-RESA-01)
                     S -> E : lève ConflictException
@@ -56,7 +56,7 @@ else corps de requête valide
 
                 else moins de 5
 
-                    S -> LD : existsByLoanerAndBookCopyLoaned_Book_IdAndStatus\n(user, bookId, LoanStatus.ACTIVE)
+                    S -> LD : existsByLoanerIdAndBookCopyLoanedBookIdAndStatus\n(user.getId(), bookId, LoanStatus.ACTIVE)
                     note right of LD : dans Loan, les champs s'appellent loaner\net bookCopyLoaned : les méthodes dérivées\nse construisent sur ces noms.\nL'emprunt porte sur un exemplaire :\nle livre est atteint via book_copy.\n--\nStatuts arrêtés par l'équipe : ACTIVE et\nRETURNED seulement. Le retard se déduit\nde due_date, il n'est pas un statut.\nL'énumération de la branche en cours compte\nencore quatre valeurs : à aligner.
                     LD --> S : true
 
@@ -75,8 +75,8 @@ else corps de requête valide
 
                         else pas encore réservé
 
-                            S -> RD : save(réservation PENDING,\nreservesDate = horodatage courant UTC)
-                            note right of RD : reservesDate fixe l'ordre de la file.\nHeure UTC obligatoire : le déclencheur SQL\nécrit lui aussi dans cette table.\n--\nUn index unique filtré sur (users_id, book_id)\npour les statuts actifs interdit le doublon\nen cas de double envoi : le contrôle applicatif\nne suffit pas à fermer la course.
+                            S -> RD : save(new Reservation(user, livre),\nstatut PENDING,\nreservesDate = horodatage courant UTC)
+                            note right of RD : reservesDate fixe l'ordre de la file.\nHeure UTC obligatoire : le déclencheur SQL\nécrit lui aussi dans cette table.\n--\nLe constructeur prend l'entité Book, non son\nidentifiant : la réservation porte désormais\nune association @ManyToOne.\n--\nUn index unique filtré sur (users_id, book_id)\npour les statuts actifs interdit le doublon\nen cas de double envoi : le contrôle applicatif\nne suffit pas à fermer la course.
                             RD --> S : réservation créée
 
                             S -> RD : countByBookIdAndStatusIn\n(bookId, ReservationStatus.ACTIFS)
@@ -85,6 +85,7 @@ else corps de requête valide
 
                             S --> C : ReservationResponse\n(id, bookId, reservesDate, rank, status)
                             C --> Lecteur : 201 Created
+                            note right of C : 201 et non 200 : la requête crée une\nressource. Le front distingue les deux.
                         end
                     end
                 end
