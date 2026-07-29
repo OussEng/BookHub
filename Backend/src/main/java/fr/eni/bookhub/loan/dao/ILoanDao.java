@@ -19,5 +19,6 @@ public interface ILoanDao {
 
     int countByLoanerIdAndStatus(long loanerId, LoanStatus status);
 
-    boolean existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(long loanerId, long bookCopyLoanedBookId, LoanStatus status);
+    boolean existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(long loanerId, long bookCopyLoanedBookId, LoanStatus loanStatus);
+
 }
