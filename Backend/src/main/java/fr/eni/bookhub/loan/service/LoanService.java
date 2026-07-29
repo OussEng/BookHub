@@ -47,13 +47,8 @@ public class LoanService {
     @id : id of the loan you want to find.
      */
     public LoanDTO findLoanById(Long id) {
-
-        if (loanRepository.findById(id) == null) {
-            throw new LoanException("Loan not found");
-        }
-
-        return new LoanDTO(loanRepository.findById(id));
-
+        return new LoanDTO(loanRepository.findById(id)
+                .orElseThrow(() -> new LoanException("Loan not found")));
     }
 
 
@@ -72,13 +67,8 @@ public class LoanService {
     @id : id of the loan you want to find.
      */
     public Loan getLoanEntityById(Long id) {
-
-        if (loanRepository.findById(id) == null) {
-            throw new LoanException("Loan not found");
-        }
-
-        return loanRepository.findById(id);
-
+        return loanRepository.findById(id)
+                .orElseThrow(() -> new LoanException("Loan not found"));
     }
 
     /*
