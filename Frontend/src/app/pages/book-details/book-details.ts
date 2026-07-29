@@ -12,6 +12,7 @@ import { BookService } from '../../services/book-service/book.service';
 })
 export class BookDetails implements OnInit {
   private bookService = inject(BookService);
+  defaultCoverUrl = 'assets/images/default.png';
 
   id = input.required<string>();
 
@@ -33,5 +34,10 @@ export class BookDetails implements OnInit {
         console.error(err);
       }
     });
+  }
+
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = this.defaultCoverUrl;
   }
 }

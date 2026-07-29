@@ -20,8 +20,9 @@
       
       <div class="md:col-span-1">
         <img 
-          [src]="book.img" 
-          [alt]="book.title" 
+          [src]="book.img  || 'assets/images/default.png'"
+                (error)="handleImageError($event)"
+                [alt]="book.title"  
           class="w-full h-auto rounded-xl shadow-md object-cover max-h-[450px]"
         >
       </div>

@@ -1,6 +1,5 @@
 package fr.eni.bookhub.book.dto.response;
 
-import fr.eni.bookhub.auth.dto.response.RegisterResponse;
 import fr.eni.bookhub.book.entity.Book;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.genre.entity.Genre;

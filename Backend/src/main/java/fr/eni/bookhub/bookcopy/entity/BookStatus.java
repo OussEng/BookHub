@@ -4,5 +4,6 @@ public enum BookStatus {
     AVAILABLE,
     LOANED,
     LOST,
-    IN_REPAIR
+    IN_REPAIR,
+    RESERVED,
 }
