@@ -119,8 +119,8 @@ public class LoanService {
     Method in charge to declare to return a loan when the book return to the library.
     @id : id of the loan you want to close.
      */
-    public void returnLoan(Long id) {
-        Loan loanFound = this.getLoanEntityById(id);
+    public void returnLoan(Long loanId) {
+        Loan loanFound = this.getLoanEntityById(loanId);
 
         if (loanFound == null) {
             throw new LoanException("Loan not found");
