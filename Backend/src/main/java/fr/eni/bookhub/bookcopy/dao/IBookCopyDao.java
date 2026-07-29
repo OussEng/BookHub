@@ -13,5 +13,7 @@ public interface IBookCopyDao {
     List<BookCopy> findAll();
     boolean existsByBook_IdAndBookStatus(Long bookId, BookStatus bookStatus);
     List<BookCopy> findByBookIdAndBookStatus(Long bookId, BookStatus bookStatus);
+    List<BookCopy> findByBookId(Long bookId);
+    Optional <BookCopy> findBySerialNumber(String serialNumber);
     BookCopy save(BookCopy bookCopy);
 }

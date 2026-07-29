@@ -1,19 +1,20 @@
-import {Component, OnInit, inject, input, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterLink} from '@angular/router';
-import {BookService} from '../../services/book-service/book.service';
+import { Component, OnInit, inject, input, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { BookService } from '../../services/book-service/book.service';
 import {LoansService} from "../../services/loans.service";
 
 @Component({
-    selector: 'app-book-details',
-    standalone: true,
-    imports: [CommonModule, RouterLink],
-    templateUrl: './book-details.html',
-    styleUrl: './book-details.css',
+  selector: 'app-book-details',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  templateUrl: './book-details.html',
+  styleUrl: './book-details.css',
 })
 export class BookDetails implements OnInit {
     private bookService = inject(BookService);
     private loanService = inject(LoansService);
+    defaultCoverUrl = 'assets/images/default.png';
 
     id = input.required<string>();
 
@@ -35,6 +36,11 @@ export class BookDetails implements OnInit {
                 console.error(err);
             }
         });
+    }
+
+    handleImageError(event: Event): void {
+        const img = event.target as HTMLImageElement;
+        img.src = this.defaultCoverUrl;
     }
 
     //Action du bouton "Emprunter le livre" -> Recherche tous les exemplaires pour en emprunter un si dispo.
