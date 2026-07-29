@@ -21,6 +21,7 @@
                 <th>Rang</th>
                 <th>Statut</th>
                 <th>Temps restant</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -63,11 +64,21 @@
                                 —
                             }
                         </td>
+                        <td class="colonne-action">
+                            @if (annulable(reservation.status)) {
+                                <button type="button"
+                                        class="bouton-annuler"
+                                        [disabled]="enCoursAnnulation() === reservation.id"
+                                        (click)="annuler(reservation)">
+                                    Annuler
+                                </button>
+                            }
+                        </td>
                     </tr>
 
                     @if (consigne(reservation)) {
                         <tr class="ligne-consigne">
-                            <td colspan="5">{{ consigne(reservation) }}</td>
+                            <td colspan="6">{{ consigne(reservation) }}</td>
                         </tr>
                     }
                 }

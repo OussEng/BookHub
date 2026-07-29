@@ -25,18 +25,12 @@ export class MesReservations implements OnInit, OnDestroy {
     protected maintenant = signal<number>(Date.now());
     private minuteur?: ReturnType<typeof setInterval>;
 
+    // Identifiant de la réservation en cours d'annulation : le bouton
+    // correspondant est désactivé le temps de l'aller-retour.
+    protected enCoursAnnulation = signal<number | null>(null);
+
     ngOnInit() {
-        this.reservationService.mesReservations().subscribe({
-            next: (data) => {
-                this.reservations = data;
-                this.isLoading.set(false);
-            },
-            error: (err) => {
-                this.errorMessage = "Impossible de charger vos réservations.";
-                this.isLoading.set(false);
-                console.error(err);
-            }
-        });
+        this.charger();
 
         // Une minute suffit : la fenêtre est de 72h, afficher la seconde
         // n'apporterait rien et ferait travailler le navigateur pour rien.
@@ -48,6 +42,54 @@ export class MesReservations implements OnInit, OnDestroy {
         if (this.minuteur) {
             clearInterval(this.minuteur);
         }
+    }
+
+    private charger() {
+        this.reservationService.mesReservations().subscribe({
+            next: (data) => {
+                this.reservations = data;
+                this.isLoading.set(false);
+            },
+            error: (err) => {
+                this.errorMessage = "Impossible de charger vos réservations.";
+                this.isLoading.set(false);
+                console.error(err);
+            }
+        });
+    }
+
+    // Seule une réservation encore dans la file peut être annulée.
+    // Les états finaux — empruntée, annulée, expirée — n'offrent rien à annuler.
+    annulable(statut: ReservationStatus): boolean {
+        return statut === 'PENDING' || statut === 'AVAILABLE';
+    }
+
+    annuler(reservation: ReservationResponse) {
+        // Geste irréversible : une réservation annulée ne revient pas dans
+        // la file, il faudrait en créer une nouvelle.
+        const message = reservation.status === 'AVAILABLE'
+            ? "L'exemplaire est mis de côté pour vous. En annulant, il passe au lecteur suivant. Confirmer ?"
+            : "Annuler cette réservation ? Vous perdrez votre place dans la file.";
+
+        if (!confirm(message)) {
+            return;
+        }
+
+        this.enCoursAnnulation.set(reservation.id);
+
+        this.reservationService.annuler(reservation.id).subscribe({
+            next: () => {
+                this.enCoursAnnulation.set(null);
+                // Rechargement complet et non retrait local : l'annulation
+                // décale le rang de tous les suivants, et peut avoir promu
+                // quelqu'un. Seul le serveur connaît le nouvel état.
+                this.charger();
+            },
+            error: (err) => {
+                this.enCoursAnnulation.set(null);
+                console.error(err);
+            }
+        });
     }
 
     // Le back renvoie les statuts bruts de l'énumération.
