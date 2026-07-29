@@ -64,3 +64,20 @@
         display: none;
     }
 }
+
+/* Décompte des 72h — F6 */
+.decompte {
+    display: block;
+    font-weight: 600;
+}
+
+.decompte--urgent {
+    color: #c62828;
+}
+
+/* Date absolue sous le décompte : le lecteur peut la noter */
+.echeance-absolue {
+    display: block;
+    font-size: 0.78rem;
+    color: #90a4ae;
+}

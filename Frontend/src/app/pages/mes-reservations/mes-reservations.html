@@ -20,7 +20,7 @@
                 <th>Date</th>
                 <th>Rang</th>
                 <th>Statut</th>
-                <th>Échéance</th>
+                <th>Temps restant</th>
             </tr>
             </thead>
             <tbody>
@@ -49,7 +49,15 @@
                         </td>
 
                         <td>
-                            @if (reservation.pickupDeadline) {
+                            @if (decompteAffichable(reservation)) {
+                                <span class="decompte"
+                                      [class.decompte--urgent]="decompteUrgent(reservation)">
+                                    {{ tempsRestant(reservation) }}
+                                </span>
+                                <span class="echeance-absolue">
+                                    {{ reservation.pickupDeadline | date:'dd/MM HH:mm' }}
+                                </span>
+                            } @else if (reservation.pickupDeadline) {
                                 {{ reservation.pickupDeadline | date:'dd/MM/yyyy HH:mm' }}
                             } @else {
                                 —
