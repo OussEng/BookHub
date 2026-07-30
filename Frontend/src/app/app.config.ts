@@ -5,9 +5,8 @@ import { catchError, of } from 'rxjs';
 import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { credentialsInterceptor } from './interceptors/credentials.interceptor';
-import { errorInterceptor } from './interceptors/error.interceptor';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { AuthService } from './services/auth.service';
+import { errorInterceptor } from './interceptors/error.interceptor';
 
 
 export const appConfig: ApplicationConfig = {
