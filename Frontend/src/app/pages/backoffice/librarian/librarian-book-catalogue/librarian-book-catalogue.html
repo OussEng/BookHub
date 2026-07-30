@@ -84,7 +84,9 @@
                     <a [routerLink]="['copies', book.id]" class="bg-[#585942] text-white px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-opacity-90 transition shadow-sm inline-block">
                       Exemplaires
                     </a>
-                    <button class="border border-[#585942] text-[#585942] px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-slate-50 transition shadow-sm">
+                    <button
+                    (click)="openUpdateBookModal(book.id)"
+                     class="border border-[#585942] text-[#585942] px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-slate-50 transition shadow-sm">
                       Modifier
                     </button>
                   </div>

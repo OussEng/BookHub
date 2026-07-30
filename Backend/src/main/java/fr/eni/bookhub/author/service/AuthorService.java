@@ -19,5 +19,10 @@ public class AuthorService {
         return authors.stream().map(AuthorResponse::fromEntity).toList();
     }
 
+    public List<AuthorResponse> getAuthorsById(List<Long> id){
+        List<Author> authors = this.authorDao.findAllById(id);
+        return authors.stream().map(AuthorResponse::fromEntity).toList();
+    }
+
 
 }
