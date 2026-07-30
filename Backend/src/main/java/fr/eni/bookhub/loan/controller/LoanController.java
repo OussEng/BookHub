@@ -17,6 +17,7 @@ public class LoanController {
 
     private final LoanService loanService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @GetMapping("")
     public ResponseEntity<List<LoanDTO>> findAll() {
         return ResponseEntity.ok().body(loanService.findAll());
@@ -34,9 +35,9 @@ public class LoanController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
-    @PutMapping("/{id}/return") // En tant que LIBRARIAN
+    @PutMapping("/{id}/return")
     public ResponseEntity<LoanDTO> returnLoans(@PathVariable Long id) {
         loanService.returnLoan(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
