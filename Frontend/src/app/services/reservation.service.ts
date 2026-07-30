@@ -6,6 +6,8 @@ import { ReservationResponse } from '../interfaces/reservation/response/reservat
 @Injectable({ providedIn: 'root' })
 export class ReservationService {
   private readonly apiUrl = 'http://localhost:8080/api/reservations';
+  // Le retrait passe par le module Emprunt : deuxième base d'URL assumée.
+  private readonly loansUrl = 'http://localhost:8080/api/loans';
 
   constructor(private http: HttpClient) {}
 
@@ -21,4 +23,12 @@ export class ReservationService {
   annuler(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+   // « Prendre » : le retrait passe par l'endpoint d'emprunt.
+  // createLoan appelle fulfillIfReady, qui reconnaît la réservation
+  // prête et la clôt en FULFILLED. Il n'y a pas d'endpoint « Prendre ».
+  prendre(bookId: number): Observable<void> {
+    return this.http.post<void>(`${this.loansUrl}/${bookId}/borrow`, null);
+  }
+
 }
