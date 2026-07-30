@@ -3,8 +3,11 @@ package fr.eni.bookhub.bookcopy.dao;
 
 import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
+import fr.eni.bookhub.bookcopy.entity.Condition;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -48,6 +51,11 @@ public class BookCopyDaoImpl implements IBookCopyDao {
     @Override
     public BookCopy save(BookCopy bookCopy) {
         return bookCopyRepository.save(bookCopy);
+    }
+
+    @Override
+    public Page<BookCopy> findCopiesByBookIdWithFilters(Long bookId, String serialNumber, Condition condition, Pageable pageable) {
+        return bookCopyRepository.findCopiesByBookIdWithFilters(bookId,serialNumber,condition,pageable);
     }
 
 

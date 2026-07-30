@@ -5,54 +5,52 @@
   </header>
 
   <section class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-10">
-    <div class="grid grid-cols-1 md:grid-cols-[auto,1fr,auto] gap-6 items-center">
-      
-      <button (click)="openNewBookModal()" class="bg-[#585942] text-white h-24 w-48 rounded-3xl flex items-center justify-center text-xl font-light tracking-wide hover:bg-opacity-90 transition duration-150 shadow-md">
-        Nouvel ouvrage
-      </button>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+  <div class="grid grid-cols-1 lg:grid-cols-[auto,1fr,auto] gap-6 items-center">
     
-        <div class="relative">
-          <label class="absolute -top-2.5 left-3 bg-white px-1 text-xs text-slate-500">Titre</label>
-          <input type="text" class="w-full h-12 px-4 border border-slate-300 rounded-full focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition">
-        </div>
+    <button 
+      (click)="openNewBookModal()" 
+      class="bg-[#585942] text-white h-24 w-48 rounded-3xl flex items-center justify-center text-xl font-light tracking-wide hover:opacity-90 transition duration-150 shadow-md justify-self-center">
+      Nouvel ouvrage
+    </button>
 
-        <div class="relative">
-          <label class="absolute -top-2.5 left-3 bg-white px-1 text-xs text-slate-500">Disponibilité</label>
-          <select class="w-full h-12 px-4 border border-slate-300 rounded-full appearance-none bg-white focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition">
-            <option value="">Tous</option>
-            <option value="true">Disponible</option>
-            <option value="false">Indisponible</option>
-          </select>
-          <svg class="w-5 h-5 absolute right-4 top-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-        </div>
+    <div class="bg-slate-50 p-6 rounded-3xl border border-gray-100 w-full">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+        <input 
+          #searchInputRef
+          type="text" 
+          placeholder="Titre, Auteur ou ISBN..." 
+          (keyup.enter)="onSearch(searchInputRef.value, genreSelectRef.value, sortSelectRef.value)"
+          class="md:col-span-2 p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm">
 
-        <div class="relative">
-          <label class="absolute -top-2.5 left-3 bg-white px-1 text-xs text-slate-500">Auteur</label>
-          <input type="text" class="w-full h-12 px-4 border border-slate-300 rounded-full focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition">
-        </div>
+        <select 
+          #genreSelectRef
+          class="p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm cursor-pointer">
+          <option value="">Toutes les catégories</option>
+          <option value="1">Science Fiction</option>
+          <option value="2">Dystopian</option>
+          <option value="3">Classic Literature</option>
+        </select>
 
-        <div class="relative">
-          <label class="absolute -top-2.5 left-3 bg-white px-1 text-xs text-slate-500">Catégories</label>
-          <select class="w-full h-12 px-4 border border-slate-300 rounded-full appearance-none bg-white focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition">
-            <option value="">Toutes</option>
-          </select>
-          <svg class="w-5 h-5 absolute right-4 top-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-        </div>
-
-        <div class="relative sm:col-span-2 lg:col-span-1">
-          <label class="absolute -top-2.5 left-3 bg-white px-1 text-xs text-slate-500">ISBN</label>
-          <input type="text" class="w-full h-12 px-4 border border-slate-300 rounded-full focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition">
-        </div>
+        <select 
+          #sortSelectRef
+          class="p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm cursor-pointer">
+          <option value="id,desc">Plus récents</option>
+          <option value="title,asc">Titre (A-Z)</option>
+          <option value="title,desc">Titre (Z-A)</option>
+          <option value="publishDate,desc">Date de parution (Récents)</option>
+          <option value="publishDate,asc">Date de parution (Anciens)</option>
+        </select>
       </div>
-
-      <button class="bg-[#585942] text-white h-24 w-48 rounded-3xl flex items-center justify-center text-xl font-light tracking-wide hover:bg-opacity-90 transition duration-150 shadow-md mt-4 md:mt-0 justify-self-end">
-        Rechercher
-      </button>
-
     </div>
-  </section>
+
+    <button 
+      (click)="onSearch(searchInputRef.value, genreSelectRef.value, sortSelectRef.value)"
+      class="bg-[#585942] text-white h-24 w-48 rounded-3xl flex items-center justify-center text-xl font-light tracking-wide hover:opacity-90 transition duration-150 shadow-md justify-self-center">
+      Rechercher
+    </button>
+
+  </div>
+</section>
 
   <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100">
     
@@ -101,6 +99,31 @@
         </table>
       </div>
     }
+  
+          @if (totalPages() > 1) {
+        <div class="flex items-center justify-between border-t border-slate-200 pt-6 mt-4 px-4">
+          <div class="text-xs text-slate-500 font-light">
+            Page {{ currentPage() + 1 }} sur {{ totalPages() }} ({{ totalElements() }} exemplaires)
+          </div>
+          <div class="flex items-center gap-2">
+            <button 
+              [disabled]="currentPage() === 0"
+              (click)="goToPage(currentPage() - 1)"
+              class="px-4 py-2 text-xs font-light rounded-full border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition">
+              Précédent
+            </button>
+            <button 
+              [disabled]="currentPage() >= totalPages() - 1"
+              (click)="goToPage(currentPage() + 1)"
+              class="px-4 py-2 text-xs font-light rounded-full border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition">
+              Suivant
+            </button>
+          </div>
+        </div>
+      }
+    
   </section>
+
+  
 
 </div>
