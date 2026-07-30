@@ -12,7 +12,9 @@ import fr.eni.bookhub.exception.custom.ResourceNotFoundException;
 import fr.eni.bookhub.loan.dao.ILoanDao;
 import fr.eni.bookhub.loan.entity.LoanStatus;
 import fr.eni.bookhub.reservation.dao.IReservationDao;
+import fr.eni.bookhub.reservation.dto.response.BookActionResponse;
 import fr.eni.bookhub.reservation.dto.response.ReservationResponse;
+import fr.eni.bookhub.reservation.entity.BookAction;
 import fr.eni.bookhub.reservation.entity.Reservation;
 import fr.eni.bookhub.reservation.entity.ReservationStatus;
 import fr.eni.bookhub.security.AuthenticatedUserProvider;
@@ -216,5 +218,48 @@ public class ReservationService {
                 reservation.getBook().getId(),
                 ReservationStatus.ACTIFS,
                 reservation.getReservesDate()) + 1;
+    }
+
+    @Transactional(readOnly = true)
+    public BookActionResponse getAvailableAction(Long bookId) {
+        User user = userProvider.getCurrentUser();
+
+        // 1. Réservation active du lecteur sur ce livre : prioritaire sur tout le reste
+        Optional<Reservation> mine = reservationDao
+                .findFirstByUserAndBookIdAndStatusIn(user, bookId, ReservationStatus.ACTIFS);
+
+        if (mine.isPresent()) {
+            Reservation r = mine.get();
+            if (r.getStatus() == ReservationStatus.READY_FOR_PICKUP
+                    && r.getPickupDeadline().isAfter(LocalDateTime.now(ZoneOffset.UTC))) {
+                return new BookActionResponse(
+                        BookAction.PICKUP, null, r.getId(), 0, r.getPickupDeadline());
+            }
+            return new BookActionResponse(
+                    BookAction.CANCEL, null, r.getId(), rank(r), null);
+        }
+
+        // 2. Prêt en cours du lecteur sur ce livre
+        if (loanDao.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(
+                user.getId(), bookId, LoanStatus.ACTIVE)) {
+            return new BookActionResponse(
+                    BookAction.NONE, "Vous empruntez déjà ce livre", null, 0, null);
+        }
+
+        // 3. Un exemplaire est empruntable : bouton « Emprunter »
+        if (bookCopyService.hasLoanableCopy(bookId)) {
+            if (loanDao.countByLoanerIdAndStatus(user.getId(), LoanStatus.ACTIVE) >= 3) {
+                return new BookActionResponse(
+                        BookAction.NONE, "Limite de 3 emprunts atteinte", null, 0, null);
+            }
+            return new BookActionResponse(BookAction.LOAN, null, null, 0, null);
+        }
+
+        // 4. Rien de disponible : bouton « Réserver »
+        if (reservationDao.countByUserAndStatusIn(user, ReservationStatus.ACTIFS) >= 5) {
+            return new BookActionResponse(
+                    BookAction.NONE, "Limite de 5 réservations atteinte", null, 0, null);
+        }
+        return new BookActionResponse(BookAction.RESERVE, null, null, 0, null);
     }
 }

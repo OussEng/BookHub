@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.EnumSet;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -46,12 +47,9 @@ public class BookCopyService {
         return copy.getBookStatus() == BookStatus.LOANED && goodCondition(copy);
     }
 
-
     public BookCopyResponse createBookCopy(CreateBookCopyRequest request) {
         Book book = bookRepository.findById(request.getBookId())
                 .orElseThrow(() -> new RuntimeException("Livre non trouvé"));
-
-
 
         if (bookCopyRepository.findBySerialNumber(request.getSerialNumber()).isPresent()) {
             throw new ConflictException("Cet exemplaire existe déjà.");
@@ -78,5 +76,10 @@ public class BookCopyService {
         return bookCopyRepository
                 .findCopiesByBookIdWithFilters(bookId, serialNumber, condition, pageable)
                 .map(BookCopyResponse::fromBookCopyEntity);
+    }
+
+    public boolean hasLoanableCopy(Long bookId) {
+        return bookCopyRepository.existsByBook_IdAndBookStatusAndConditionIn(
+                bookId, BookStatus.AVAILABLE, EnumSet.of(Condition.NEW, Condition.GOOD));
     }
 }

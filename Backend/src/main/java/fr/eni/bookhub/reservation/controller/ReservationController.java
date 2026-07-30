@@ -1,5 +1,6 @@
 package fr.eni.bookhub.reservation.controller;
 
+import fr.eni.bookhub.reservation.dto.response.BookActionResponse;
 import fr.eni.bookhub.reservation.dto.response.ReservationResponse;
 import fr.eni.bookhub.reservation.service.ReservationService;
 import org.springframework.http.HttpStatus;
@@ -37,4 +38,10 @@ public class ReservationController {
     public ResponseEntity<List<ReservationResponse>> getMyReservations () {
         return ResponseEntity.ok(reservationService.getMyReservations());
     }
+
+    @GetMapping("/book/{bookId}/action")
+    public ResponseEntity<BookActionResponse> getAvailableAction(@PathVariable Long bookId) {
+        return ResponseEntity.ok(reservationService.getAvailableAction(bookId));
+    }
+
 }

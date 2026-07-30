@@ -15,13 +15,13 @@ public interface IReservationDao {
     Reservation save(Reservation reservation);
 
     // RG-RESA-01 : nombre de réservations vivantes du lecteur, plafonné à 5
-    long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuts);
+    long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuses);
 
     // Doublon : le lecteur a-t-il déjà une réservation vivante sur ce livre ?
-    boolean existsByUserAndBookIdAndStatusIn(User user, Long bookId, Collection<ReservationStatus> statuts);
+    boolean existsByUserAndBookIdAndStatusIn(User user, Long bookId, Collection<ReservationStatus> statuses);
 
     // Taille de la file du livre, égale au rang de la réservation qui vient d'être créée
-    long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuts);
+    long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuses);
 
     Optional<Reservation> findFirstByBookIdAndStatusOrderByReservesDateAsc(
             Long bookId,
@@ -44,6 +44,9 @@ public interface IReservationDao {
     // Position dans la file : nombre de réservations actives antérieures
     long countByBookIdAndStatusInAndReservesDateBefore(
             Long bookId,
-            Collection<ReservationStatus> statuts,
+            Collection<ReservationStatus> statuses,
             LocalDateTime reservesDate);
+
+    Optional<Reservation> findFirstByUserAndBookIdAndStatusIn(
+            User user, Long bookId, Collection<ReservationStatus> statuses);
 }
