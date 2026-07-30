@@ -15,6 +15,7 @@ import { AuthorService } from '../../../../services/author-service/author.servic
 import { GenreService } from '../../../../services/genre-service/genre.service';
 import { FlashMessageService } from '../../../../services/flash-message-service/flash-message-service';
 import { BookUpdateModal } from '../../../../components/modals/book-update-modal/book-update-modal';
+import { BookDeleteModal } from '../../../../components/modals/book-delete-modal/book-delete-modal';
 
 @Component({
   selector: 'app-librarian-book-catalogue',
@@ -155,12 +156,10 @@ export class LibrarianBookCatalogue {
 
 
   openUpdateBookModal(bookId: number): void {
-  // 1. Ensure dropdown lists (authors/genres) are loaded
   if (this.authors().length === 0 || this.genres().length === 0) {
     this.loadDropdownData();
   }
 
-  // 2. Fetch full book details (with authorIds and genreIds) from backend
   this.bookService.getBookById(bookId).subscribe({
     next: (bookDetail) => {
       const dialogRef = this.dialog.open(BookUpdateModal, {
@@ -201,6 +200,31 @@ export class LibrarianBookCatalogue {
     },
     error: (err) => console.error('Error loading book details', err)
   });
+  }
 
+  openDeleteBookModal(book: Book): void {
+    const dialogRef = this.dialog.open(BookDeleteModal, {
+      data: { book },
+      width: '440px',
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.deleteBook(book.id);
+        this.flashService.success("Livre supprimé avec succès");
+      }
+    });
+  }
+
+  private deleteBook(id: number): void {
+    this.bookService.delete(id).subscribe({
+      next: () => {
+        this.loadBooks(0); 
+      },
+      error: () => {
+        console.error('Erreur lors de la suppression de l’ouvrage:');
+      }
+    });
   }
 }

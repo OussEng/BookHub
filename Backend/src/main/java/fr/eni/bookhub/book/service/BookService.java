@@ -164,4 +164,11 @@ public class BookService {
         Book savedBook = bookRepository.save(book);
         return BookResponse.fromBookEntity(savedBook);
     }
+
+    public void deleteBook(Long id) {
+        if (!bookRepository.existsById(id)) {
+            throw new EntityNotFoundException("Book with ID " + id + " not found");
+        }
+        bookRepository.deleteById(id);
+    }
 }
