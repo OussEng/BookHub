@@ -29,7 +29,7 @@
                     <tr>
                         <td>
                             <a [routerLink]="['/book', reservation.bookId]">
-                                Livre n° {{ reservation.bookId }}
+                                {{ reservation.bookTitle }}
                             </a>
                         </td>
 
@@ -65,7 +65,7 @@
                             }
                         </td>
                         <td class="colonne-action">
-                            @if (annulable(reservation.status)) {
+                            @if (reservation.canBeCancelled) {
                                 <button type="button"
                                         class="bouton-annuler"
                                         [disabled]="enCoursAnnulation() === reservation.id"

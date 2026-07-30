@@ -58,12 +58,6 @@ export class MesReservations implements OnInit, OnDestroy {
         });
     }
 
-    // Seule une réservation encore dans la file peut être annulée.
-    // Les états finaux — empruntée, annulée, expirée — n'offrent rien à annuler.
-    annulable(statut: ReservationStatus): boolean {
-        return statut === 'PENDING' || statut === 'READY_FOR_PICKUP';
-    }
-
     annuler(reservation: ReservationResponse) {
         // Geste irréversible : une réservation annulée ne revient pas dans
         // la file, il faudrait en créer une nouvelle.
@@ -106,7 +100,7 @@ export class MesReservations implements OnInit, OnDestroy {
     }
 
     // Deux messages seulement, et ils ne disent pas la même chose :
-    // AVAILABLE presse le lecteur, FULFILLED le rassure.
+    // READY_FOR_PICKUP presse le lecteur, FULFILLED le rassure.
     consigne(reservation: ReservationResponse): string {
         if (reservation.status === 'READY_FOR_PICKUP') {
             return "Cliquez sur Prendre avant l'échéance, sinon l'exemplaire passe au suivant.";
@@ -128,7 +122,7 @@ export class MesReservations implements OnInit, OnDestroy {
         return 'statut statut--' + statut.toLowerCase();
     }
 
-    // Le décompte n'a de sens que pendant les 72h, donc au statut AVAILABLE.
+    // Le décompte n'a de sens que pendant les 72h, donc au statut READY_FOR_PICKUP.
     decompteAffichable(reservation: ReservationResponse): boolean {
         return reservation.status === 'READY_FOR_PICKUP' && !!reservation.pickupDeadline;
     }

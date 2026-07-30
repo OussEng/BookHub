@@ -7,4 +7,6 @@ export interface ReservationResponse {
     rank: number;
     status: ReservationStatus;
     pickupDeadline: string | null;
+    bookTitle: string;
+    canBeCancelled: boolean;
 }
