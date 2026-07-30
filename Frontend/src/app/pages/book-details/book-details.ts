@@ -3,14 +3,17 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BookService } from '../../services/book-service/book.service';
 import {LoansService} from "../../services/loans.service";
+
+import {BookReviews} from "../book-reviews/book-reviews";
 import {FlashMessageService} from "../../services/flash-message-service/flash-message-service";
 
 @Component({
-  selector: 'app-book-details',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './book-details.html',
-  styleUrl: './book-details.css',
+    selector: 'app-book-details',
+    standalone: true,
+    imports: [CommonModule, RouterLink, BookReviews],
+    templateUrl: './book-details.html',
+    styleUrl: './book-details.css',
+
 })
 export class BookDetails implements OnInit {
     private bookService = inject(BookService);

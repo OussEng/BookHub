@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class ReviewResponse {
 
     private final Long id;
+    private final Long userId;
     private final String username;
     private final Long bookId;
     private final Integer rating;
@@ -31,6 +32,7 @@ public class ReviewResponse {
 
         return ReviewResponse.builder()
                 .id(review.getId())
+                .userId(review.getUser().getId())
                 .username(username != null ? username : (firstname + " " + initial).trim())
                 .bookId(review.getBook().getId())
                 .rating(review.getRating())
