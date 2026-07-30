@@ -1,3 +1,5 @@
+import { BookCopy } from "../book-copy/book-copy";
+
 export interface Book {
   id: number;
   title: string;
