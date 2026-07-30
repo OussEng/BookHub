@@ -55,6 +55,11 @@ public class ReservationDaoImpl implements IReservationDao {
     }
 
     @Override
+    public Optional<Reservation> findByIdForUpdate(Long reservationId) {
+        return reservationRepository.findByIdForUpdate(reservationId);
+    }
+
+    @Override
     public Optional<Reservation> findById(Long reservationId) {
         return reservationRepository.findById(reservationId);
     }
@@ -62,5 +67,17 @@ public class ReservationDaoImpl implements IReservationDao {
     @Override
     public List<Reservation> findByStatusAndPickupDeadlineBefore(ReservationStatus status, LocalDateTime deadline) {
         return reservationRepository.findByStatusAndPickupDeadlineBefore(status, deadline);
+    }
+
+    @Override
+    public List<Reservation> findByUserOrderByReservesDateDesc(User user) {
+        return reservationRepository.findByUserOrderByReservesDateDesc(user);
+    }
+
+    @Override
+    public long countByBookIdAndStatusInAndReservesDateBefore(
+            Long bookId, Collection<ReservationStatus> statuts, LocalDateTime reservesDate) {
+        return reservationRepository
+                .countByBookIdAndStatusInAndReservesDateBefore(bookId, statuts, reservesDate);
     }
 }

@@ -31,7 +31,19 @@ public interface IReservationDao {
 
     Optional<Reservation> findByUserAndBookIdAndStatus(User user, Long bookId, ReservationStatus status);
 
+    Optional<Reservation> findByIdForUpdate(Long reservationId);
+
     Optional<Reservation> findById(Long reservationId);
 
+
     List<Reservation> findByStatusAndPickupDeadlineBefore(ReservationStatus status, LocalDateTime deadline);
+
+    // Réservations du lecteur, la plus récente en premier
+    List<Reservation> findByUserOrderByReservesDateDesc(User user);
+
+    // Position dans la file : nombre de réservations actives antérieures
+    long countByBookIdAndStatusInAndReservesDateBefore(
+            Long bookId,
+            Collection<ReservationStatus> statuts,
+            LocalDateTime reservesDate);
 }

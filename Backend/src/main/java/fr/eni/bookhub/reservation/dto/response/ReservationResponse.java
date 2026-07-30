@@ -12,27 +12,26 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReservationResponse {
 
-    private Long id;
+    private final Long id;
+    private final Long bookId;
+    private final String bookTitle;
+    private final LocalDateTime reservesDate;
+    private final long rank;
+    private final ReservationStatus status;
+    private final LocalDateTime pickupDeadline;
+    private final boolean canBeCancelled;
 
-    // TODO ajouter le titre du livre quand l'entité Book sera disponible
-    private Long bookId;
-
-    private LocalDateTime reservesDate;
-
-    private long rank;
-
-    private ReservationStatus status;
-
-    // Le rang n'est pas stocké : il est calculé par une requête à part
+    // Le rang n'est pas porté par l'entité : il vient d'une requête à part
     public static ReservationResponse fromEntity(Reservation reservation, long rank) {
         return new ReservationResponse(
                 reservation.getId(),
                 reservation.getBook().getId(),
+                reservation.getBook().getTitle(),
                 reservation.getReservesDate(),
                 rank,
-                reservation.getStatus()
-
+                reservation.getStatus(),
+                reservation.getPickupDeadline(),
+                ReservationStatus.ACTIFS.contains(reservation.getStatus())
         );
     }
-
 }

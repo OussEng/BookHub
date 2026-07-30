@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -59,31 +60,18 @@ public class ReservationService {
         if (reservationDao.existsByUserAndBookIdAndStatusIn(currentUser, bookId, ReservationStatus.ACTIFS))
             throw new ConflictException("Vous réservez déjà ce livre");
 
+        if (reservationDao.countByUserAndStatusIn(currentUser, ReservationStatus.ACTIFS) >= 5)
+            throw new ConflictException("Limite de 5 réservations en cours atteinte");
+
         // Livre disponible à l'emprunt
         if (bookCopyDao.existsByBook_IdAndBookStatusAndConditionIn(bookId, BookStatus.AVAILABLE, EnumSet.of(Condition.NEW, Condition.GOOD)))
-            throw new ConflictException("Le livre est dipsonible, empruntez-le directement");
-
-        long reservationListLength = reservationDao.countByBookIdAndStatusIn(bookId, ReservationStatus.ACTIFS);
-
-        // Liste de réservation supérieur ou égale à 5.
-        if (reservationListLength >= 5)
-            throw new ConflictException("Limite de 5 réservations atteintes");
+            throw new ConflictException("Le livre est disponible, empruntez-le directement");
 
         Reservation reservation = reservationDao.save(new Reservation(currentUser, bookFound));
 
-        long rank = reservationDao.countByBookIdAndStatusIn(bookId, ReservationStatus.ACTIFS);
-
-        return ReservationResponse.fromEntity(reservation, rank);
+        return ReservationResponse.fromEntity(reservation, rank(reservation));
     }
 
-    /**
-     * Fait avancer la file d'un cran pour un livre donné.
-     * Appelée sur retour de prêt (fromStatus = AVAILABLE, une fois l'exemplaire libéré),
-     * sur annulation et sur expiration (fromStatus = RESERVED).
-     * L'appelant tient la transaction.
-     *
-     * @return true si une réservation a été promue
-     */
     @Transactional(propagation = Propagation.MANDATORY)
     public boolean promote(Long bookId, Long bookCopyId, BookStatus fromStatus) {
 
@@ -115,11 +103,18 @@ public class ReservationService {
             return false;
         }
 
-        // 4. Mise de côté.
+        // 4. Vérifie L'état
+        if (!bookCopyService.goodCondition(bookCopy)) {
+            bookCopy.setBookStatus(BookStatus.AVAILABLE);
+            bookCopyDao.saveAndFlush(bookCopy);
+            return false;
+        }
+
+        // 5. Mise de côté.
         bookCopy.setBookStatus(BookStatus.RESERVED);
         bookCopyDao.saveAndFlush(bookCopy);
 
-        // 5. La réservation passe en tête. Deadline stockée, jamais recalculée.
+        // 6. La réservation passe en tête. Deadline stockée, jamais recalculée.
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         Reservation reservation = firstReservation.get();
         reservation.setStatus(ReservationStatus.READY_FOR_PICKUP);
@@ -130,13 +125,6 @@ public class ReservationService {
         return true;
     }
 
-    /**
-     * Vérifie si l'utilisateur a une réservation prête à retirer pour ce livre.
-     * Si oui, la clôture (FULFILLED) et renvoie l'exemplaire mis de côté.
-     * Si le délai de retrait est dépassé, lève une exception.
-     *
-     * @return l'exemplaire réservé, ou vide si aucune réservation prête n'existe
-     */
     @Transactional
     public Optional<BookCopy> fulfillIfReady(User user, Long bookId) {
         Optional<Reservation> readyReservation = reservationDao
@@ -168,7 +156,7 @@ public class ReservationService {
     public void cancelReservation(Long reservationId) {
         User currentUser = userProvider.getCurrentUser();
 
-        Reservation reservation = reservationDao.findById(reservationId)
+        Reservation reservation = reservationDao.findByIdForUpdate(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Réservation introuvable"));
 
         if (!reservation.getUser().getId().equals(currentUser.getId()))
@@ -190,11 +178,11 @@ public class ReservationService {
 
     @Transactional
     public void expireOne(Long reservationId) {
-        Reservation reservation = reservationDao.findById(reservationId)
+        Reservation reservation = reservationDao.findByIdForUpdate(reservationId)
                 .orElseThrow();
 
         if (reservation.getStatus() != ReservationStatus.READY_FOR_PICKUP) {
-            return; // déjà traitée entre-temps, ou changée d'état
+            return; // déjà traitée entre-temps, ou changée d'état.
         }
 
         Long bookId = reservation.getBook().getId();
@@ -203,6 +191,30 @@ public class ReservationService {
         reservation.setStatus(ReservationStatus.EXPIRED);
         reservationDao.save(reservation);
 
-        promote(bookId, bookCopyId, fr.eni.bookhub.bookcopy.entity.BookStatus.RESERVED);
+        promote(bookId, bookCopyId, BookStatus.RESERVED);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationResponse> getMyReservations() {
+        User currentUser = userProvider.getCurrentUser();
+
+        return reservationDao.findByUserOrderByReservesDateDesc(currentUser)
+                .stream()
+                .map(reservation -> ReservationResponse.fromEntity(reservation, rank(reservation)))
+                .toList();
+    }
+
+    /**
+     * Position dans la file : une de plus que le nombre de réservations
+     * actives entrées avant celle-ci. 0 pour une réservation close.
+     */
+    private long rank(Reservation reservation) {
+        if (!ReservationStatus.ACTIFS.contains(reservation.getStatus())) {
+            return 0;
+        }
+        return reservationDao.countByBookIdAndStatusInAndReservesDateBefore(
+                reservation.getBook().getId(),
+                ReservationStatus.ACTIFS,
+                reservation.getReservesDate()) + 1;
     }
 }

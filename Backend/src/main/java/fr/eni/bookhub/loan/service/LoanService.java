@@ -11,21 +11,15 @@ import fr.eni.bookhub.loan.dao.ILoanDao;
 import fr.eni.bookhub.loan.dto.response.LoanDTO;
 import fr.eni.bookhub.loan.entity.Loan;
 import fr.eni.bookhub.loan.entity.LoanStatus;
-import fr.eni.bookhub.reservation.dao.IReservationDao;
-import fr.eni.bookhub.reservation.entity.Reservation;
-import fr.eni.bookhub.reservation.entity.ReservationStatus;
 import fr.eni.bookhub.reservation.service.ReservationService;
 import fr.eni.bookhub.security.AuthenticatedUserProvider;
 import fr.eni.bookhub.user.entity.User;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -79,6 +73,7 @@ public class LoanService {
 
     }
 
+    @Transactional
     public void createLoan(Long bookId) {
         User currentUser = authenticatedUserProvider.getCurrentUser();
 
@@ -129,8 +124,6 @@ public class LoanService {
         }
 
         BookCopy bookCopy = loanFound.getBookCopyLoaned();
-        bookCopy.setBookStatus(BookStatus.AVAILABLE);
-        bookCopyRepository.saveAndFlush(bookCopy);
 
         loanFound.setReturnDate(LocalDate.now());
         loanFound.setStatus(LoanStatus.RETURNED);
@@ -139,7 +132,7 @@ public class LoanService {
         reservationService.promote(
                 bookCopy.getBook().getId(),
                 bookCopy.getId(),
-                BookStatus.AVAILABLE
+                BookStatus.LOANED
         );
     }
 

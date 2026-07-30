@@ -1,7 +1,6 @@
 package fr.eni.bookhub.bookcopy.service;
 
 
-import fr.eni.bookhub.book.dto.response.BookResponse;
 import fr.eni.bookhub.book.entity.Book;
 import fr.eni.bookhub.book.repository.BookRepository;
 import fr.eni.bookhub.bookcopy.dto.request.CreateBookCopyRequest;

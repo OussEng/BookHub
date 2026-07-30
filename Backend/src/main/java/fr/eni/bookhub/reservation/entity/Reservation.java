@@ -54,10 +54,9 @@ public class Reservation {
     public Reservation(User user, Book book) {
         this.user = user;
         this.book = book;
-        this.reservesDate = LocalDateTime.now();
         this.status = ReservationStatus.PENDING;
-        // UTC obligatoire : le déclencheur SQL écrit notified_at et pickup_deadline
-        // avec l'heure du serveur. Deux origines d'heure = fenêtre de retrait décalée.
+        // UTC partout : promote() écrit notifiedAt et pickupDeadline en UTC.
+        // Deux origines d'heure = ordre de file faussé et fenêtre de retrait décalée.
         this.reservesDate = LocalDateTime.now(ZoneOffset.UTC);
     }
 
