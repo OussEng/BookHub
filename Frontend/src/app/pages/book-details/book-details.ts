@@ -12,6 +12,7 @@ import {LoansService} from "../../services/loans.service";
     styleUrl: './book-details.css',
 })
 export class BookDetails implements OnInit {
+    defaultCoverUrl = 'assets/images/default.png';
     private bookService = inject(BookService);
     private loanService = inject(LoansService);
 
@@ -37,8 +38,13 @@ export class BookDetails implements OnInit {
         });
     }
 
+    handleImageError(event: Event): void {
+        const img = event.target as HTMLImageElement;
+        img.src = this.defaultCoverUrl;
+    }
+
     //Action du bouton "Emprunter le livre" -> Recherche tous les exemplaires pour en emprunter un si dispo.
-    loanBookCopyByBookDetails(){
+    loanBookCopyByBookDetails() {
         if (this.book.available) {
             const bookId = this.book.id;
             this.loanService.newLoan(bookId);
