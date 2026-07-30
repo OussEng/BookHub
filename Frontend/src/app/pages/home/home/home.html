@@ -4,28 +4,49 @@
   <main class="flex-grow container mx-auto px-4 py-8">
 
     <div class="bg-[#FFC857] rounded-2xl shadow-md p-6 md:p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
-      <div class="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-        <div class="w-32 h-44 sm:w-36 sm:h-48 bg-white/60 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border border-yellow-200">
-          <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">A la une</span>
-        </div>
-        <div>
-          <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-white/80 text-gray-800 mb-3 uppercase tracking-wider shadow-sm">
-            Nouveauté du mois
-          </span>
-          <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
-            Catalogue des ouvrages
-          </h1>
-          <p class="text-sm md:text-base text-gray-800 max-w-xl opacity-90">
-            Découvrez notre dernier coup de cœur littéraire disponible dès maintenant dans notre catalogue interactif.
-          </p>
-        </div>
-      </div>
-      <div class="flex-shrink-0">
-        <button class="bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-5 py-3 rounded-xl shadow-md transition-all duration-200">
-          Voir la nouveauté
-        </button>
-      </div>
+  <div class="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+    
+  
+    <div class="w-32 h-44 sm:w-36 sm:h-48 bg-white/60 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border border-yellow-200 overflow-hidden">
+      @if (latestBook()?.img) {
+        <img [src]="latestBook()?.img" [alt]="latestBook()?.title" class="w-full h-full object-cover">
+      } @else {
+        <img [src]="latestBook()?.img || defaultCoverUrl" (error)="handleImageError($event)" [alt]="latestBook()?.title" class="w-full h-full object-cover">
+      }
     </div>
+
+    <div>
+      <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-white/80 text-gray-800 mb-3 uppercase tracking-wider shadow-sm">
+        Nouveauté du mois
+      </span>
+      <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
+        {{ latestBook()?.title || 'Catalogue des ouvrages' }}
+      </h1>
+      <p class="text-sm md:text-base text-gray-800 max-w-xl opacity-90">
+        @if (latestBook()?.author) {
+          Par {{ latestBook()?.author?.join(', ') }} — Découvrez notre dernier coup de cœur littéraire disponible dès maintenant.
+        } @else {
+          Découvrez notre dernier coup de cœur littéraire disponible dès maintenant dans notre catalogue interactif.
+        }
+      </p>
+    </div>
+  </div>
+
+ 
+  <div class="flex-shrink-0">
+    @if (latestBook()) {
+      <a 
+        [routerLink]="['/book', latestBook()?.id]" 
+        class="bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-5 py-3 rounded-xl shadow-md transition-all duration-200 inline-block">
+        Voir la nouveauté
+      </a>
+    } @else {
+      <button class="bg-gray-900 opacity-50 text-white text-sm font-semibold px-5 py-3 rounded-xl shadow-md cursor-not-allowed" disabled>
+        Voir la nouveauté
+      </button>
+    }
+  </div>
+</div>
 
     <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-8">
   <div class="grid grid-cols-1 md:grid-cols-5 gap-4">

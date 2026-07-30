@@ -51,5 +51,10 @@ public class BookDaoImpl implements IBookDao {
         return bookRepository.findAll();
     }
 
+    @Override
+    public Optional<Book> findTopByOrderByIdDesc() {
+        return bookRepository.findTopByOrderByIdDesc();
+    }
+
 
 }
