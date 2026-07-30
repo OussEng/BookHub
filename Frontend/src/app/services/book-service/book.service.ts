@@ -59,5 +59,9 @@ export class BookService {
     return this.http.put<Book>(`${this.apiUrl}/${id}`, formData);
   }
 
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/delete/${id}`);
+  }
+
 
 }

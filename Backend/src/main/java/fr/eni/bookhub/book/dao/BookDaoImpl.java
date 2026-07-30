@@ -36,4 +36,14 @@ public class BookDaoImpl implements IBookDao {
     public Page<Book> searchBooks(String search, Long genreId, Pageable pageable) {
         return bookRepository.searchBooks(search, genreId,pageable);
     }
+
+    @Override
+    public boolean existsById(Long id) {
+        return bookRepository.existsById(id);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        bookRepository.deleteById(id);
+    }
 }
