@@ -1,6 +1,5 @@
 package fr.eni.bookhub.book.dao;
 
-import aj.org.objectweb.asm.commons.Remapper;
 import fr.eni.bookhub.book.entity.Book;
 import fr.eni.bookhub.book.repository.BookRepository;
 import lombok.AllArgsConstructor;
