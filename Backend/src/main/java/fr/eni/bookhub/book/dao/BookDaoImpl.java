@@ -44,8 +44,12 @@ public class BookDaoImpl implements IBookDao {
     @Override
     public void deleteById(Long id) {
         bookRepository.deleteById(id);
+    }
 
+    @Override
     public List<Book> findAll() {
         return bookRepository.findAll();
     }
+
+
 }
