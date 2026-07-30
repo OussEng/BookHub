@@ -7,4 +7,6 @@ export interface LoansResponseModel {
     returnDate: string;
     status: string;
     bookTitle: string;
+    loanerFirstName: string;
+    loanerLastName: string;
 }

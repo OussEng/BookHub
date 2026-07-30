@@ -71,8 +71,8 @@ export class BookDetails implements OnInit {
                 next: (data) => {
                     this.loadBooks(bookId);
                     this.loadLoans();
-                    this.isLoading.set(false)
                     this.flashService.success("Votre location a bien été enregistrée")
+                    this.isLoading.set(false)
                 },
                 error: (err) => {
                     this.isLoading.set(false)
