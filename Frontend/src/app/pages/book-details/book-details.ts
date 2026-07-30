@@ -42,7 +42,6 @@ export class BookDetails implements OnInit {
             error: (err) => {
                 this.errorMessage = "Impossible de charger les détails du livre.";
                 this.isLoading.set(false)
-                console.error(err);
             }
         });
     }

@@ -6,4 +6,5 @@ export interface LoansResponseModel {
     dueDate: string;
     returnDate: string;
     status: string;
+    bookTitle: string;
 }
