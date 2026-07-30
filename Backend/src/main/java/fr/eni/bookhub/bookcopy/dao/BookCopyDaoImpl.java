@@ -7,6 +7,8 @@ import fr.eni.bookhub.bookcopy.entity.Condition;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
 import fr.eni.bookhub.reservation.entity.ReservationStatus;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -53,4 +55,21 @@ public class BookCopyDaoImpl implements IBookCopyDao {
     public BookCopy saveAndFlush(BookCopy bookCopy) {
         return bookCopyRepository.saveAndFlush(bookCopy);
     }
+
+    @Override
+    public List<BookCopy> findByBookId(Long bookId) {
+        return bookCopyRepository.findByBookId(bookId);
+    }
+
+    @Override
+    public Optional<BookCopy> findBySerialNumber(String serialNumber) {
+        return bookCopyRepository.findBySerialNumber(serialNumber);
+    }
+
+    @Override
+    public Page<BookCopy> findCopiesByBookIdWithFilters(Long bookId, String serialNumber, Condition condition, Pageable pageable) {
+        return bookCopyRepository.findCopiesByBookIdWithFilters(bookId,serialNumber,condition,pageable);
+    }
+
+
 }

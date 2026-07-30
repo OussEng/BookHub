@@ -1,0 +1,83 @@
+<div class="p-6 bg-[#FBF7E7] text-slate-900 rounded-[2rem] max-w-lg w-full">
+  <h2 class="font-serif text-3xl font-normal text-slate-950 mb-6 text-center">Nouvel ouvrage</h2>
+
+  <form [formGroup]="bookForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+    
+    
+    <div class="relative">
+      <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">Titre</label>
+      <input type="text" formControlName="title" class="w-full h-12 px-4 bg-white border border-slate-300 rounded-full focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition">
+    </div>
+
+   
+    <div class="relative">
+      <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">Auteurs</label>
+      <select multiple formControlName="authors" class="w-full h-24 p-3 bg-white border border-slate-300 rounded-2xl focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition text-sm">
+        @for (author of availableAuthors; track author.id) {
+          <option [value]="author.id" class="py-1">
+            {{ author.penName ? author.penName : (author.firstname + ' ' + author.lastname) }}
+          </option>
+        }
+      </select>
+    </div>
+
+    
+    <div class="relative">
+      <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">Genres</label>
+      <select multiple formControlName="genres" class="w-full h-24 p-3 bg-white border border-slate-300 rounded-2xl focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition text-sm">
+        @for (genre of availableGenres; track genre.id) {
+          <option [value]="genre.id" class="py-1">
+            {{ genre.label }}
+          </option>
+        }
+      </select>
+    </div>
+
+    
+    <div class="relative">
+      <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">ISBN</label>
+      <input type="text" formControlName="isbn" class="w-full h-12 px-4 bg-white border border-slate-300 rounded-full focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition">
+    </div>
+
+    <div class="relative">
+  <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">
+    Date de publication
+  </label>
+  <input 
+    type="date" 
+    formControlName="publishDate" 
+    class="w-full h-12 px-4 bg-white border border-slate-300 rounded-full focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition text-sm text-slate-700"
+  >
+</div>
+
+    
+    <div class="relative flex flex-col gap-2">
+      <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">Image de couverture</label>
+      <input type="file" (change)="onFileSelected($event)" accept="image/*" class="w-full p-2 bg-white border border-slate-300 rounded-2xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:bg-[#585942] file:text-white hover:file:bg-opacity-90">
+      
+      
+      @if (imagePreview) {
+        <div class="w-20 h-28 rounded-lg overflow-hidden border border-slate-300 mt-1">
+          <img [src]="imagePreview" alt="Aperçu" class="w-full h-full object-cover">
+        </div>
+      }
+    </div>
+
+    
+    <div class="relative">
+      <label class="absolute -top-2.5 left-3 bg-[#FBF7E7] px-1 text-xs text-slate-600 z-10">Description</label>
+      <textarea formControlName="description" rows="3" class="w-full p-4 bg-white border border-slate-300 rounded-2xl focus:ring-2 focus:ring-[#949577] focus:border-[#949577] outline-none transition"></textarea>
+    </div>
+
+    
+    <div class="flex justify-end gap-3 mt-2">
+      <button type="button" (click)="onCancel()" class="px-6 py-2.5 rounded-full text-xs font-light tracking-wide border border-slate-400 hover:bg-slate-100 transition">
+        Annuler
+      </button>
+      <button type="submit" [disabled]="bookForm.invalid" class="bg-[#585942] text-white px-6 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-opacity-90 transition shadow-sm disabled:opacity-50">
+        Enregistrer
+      </button>
+    </div>
+
+  </form>
+</div>

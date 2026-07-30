@@ -5,6 +5,9 @@ import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.entity.Condition;
 import fr.eni.bookhub.reservation.entity.ReservationStatus;
+import fr.eni.bookhub.bookcopy.entity.Condition;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,5 +22,7 @@ public interface IBookCopyDao {
     BookCopy save(BookCopy bookCopy);
     Optional<BookCopy> findByIdForUpdate(Long id);
     BookCopy saveAndFlush(BookCopy bookCopy);
-
+    List<BookCopy> findByBookId(Long bookId);
+    Optional <BookCopy> findBySerialNumber(String serialNumber);
+    Page<BookCopy> findCopiesByBookIdWithFilters(Long bookId, String serialNumber, Condition condition, Pageable pageable);
 }
