@@ -10,8 +10,12 @@ import java.util.List;
 
 @Repository
 public interface LoanRepository extends JpaRepository<Loan, Long> {
+
     List<Loan> findByLoanerId(long loanerId);
+
     boolean existsByLoanerIdAndBookCopyLoanedBookId(long loanerId, long bookCopyLoanedBookId);
+
     int countByLoanerIdAndStatus(Long loanerId, LoanStatus status);
+
     boolean existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(long loanerId, long bookCopyLoanedBookId, LoanStatus loanStatus);
 }

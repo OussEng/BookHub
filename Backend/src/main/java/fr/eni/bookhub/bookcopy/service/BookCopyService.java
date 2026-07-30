@@ -1,32 +1,34 @@
 package fr.eni.bookhub.bookcopy.service;
 
 
-import fr.eni.bookhub.book.dto.response.BookResponse;
+import fr.eni.bookhub.book.dao.IBookDao;
 import fr.eni.bookhub.book.entity.Book;
-import fr.eni.bookhub.book.repository.BookRepository;
+import fr.eni.bookhub.bookcopy.dao.IBookCopyDao;
 import fr.eni.bookhub.bookcopy.dto.request.CreateBookCopyRequest;
 import fr.eni.bookhub.bookcopy.dto.response.BookCopyResponse;
 import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.entity.Condition;
-import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
+import fr.eni.bookhub.exception.custom.ConflictException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.EnumSet;
 
 
 @Service
 public class BookCopyService {
 
-    private final BookCopyRepository bookCopyRepository;
-    private final BookRepository bookRepository;
+    private final IBookCopyDao bookCopyRepository;
+    private final IBookDao bookRepository;
 
-    public BookCopyService(BookCopyRepository bookCopyRepository, BookRepository bookRepository) {
+    public BookCopyService(IBookCopyDao bookCopyRepository, IBookDao bookRepository) {
         this.bookCopyRepository = bookCopyRepository;
         this.bookRepository = bookRepository;
     }
 
-    private boolean goodCondition(BookCopy copy) {
+    public boolean goodCondition(BookCopy copy) {
         return copy.getCondition() == Condition.NEW
                 || copy.getCondition() == Condition.GOOD;
     }
@@ -39,16 +41,19 @@ public class BookCopyService {
         return copy.getBookStatus() == BookStatus.LOANED && goodCondition(copy);
     }
 
-
     public BookCopyResponse createBookCopy(CreateBookCopyRequest request) {
         Book book = bookRepository.findById(request.getBookId())
                 .orElseThrow(() -> new RuntimeException("Livre non trouvé"));
+
+        if (bookCopyRepository.findBySerialNumber(request.getSerialNumber()).isPresent()) {
+            throw new ConflictException("Cet exemplaire existe déjà.");
+        }
 
         BookCopy copy = BookCopy.builder()
                 .serialNumber(request.getSerialNumber())
                 .book(book)
                 .bookStatus(BookStatus.AVAILABLE)
-                .condition(Condition.NEW)
+                .condition(request.getCondition())
                 .build();
 
         BookCopy savedCopy = bookCopyRepository.save(copy);
@@ -56,10 +61,19 @@ public class BookCopyService {
         return BookCopyResponse.fromBookCopyEntity(savedCopy);
     }
 
-    public List<BookCopyResponse> getCopiesByBookId(Long bookId) {
-        List<BookCopy> copies = bookCopyRepository.findByBookId(bookId);
-        return copies.stream()
-                .map(BookCopyResponse::fromBookCopyEntity)
-                .toList();
+    public Page<BookCopyResponse> getCopiesByBookId(
+            Long bookId,
+            String serialNumber,
+            Condition condition,
+            Pageable pageable
+    ) {
+        return bookCopyRepository
+                .findCopiesByBookIdWithFilters(bookId, serialNumber, condition, pageable)
+                .map(BookCopyResponse::fromBookCopyEntity);
+    }
+
+    public boolean hasLoanableCopy(Long bookId) {
+        return bookCopyRepository.existsByBook_IdAndBookStatusAndConditionIn(
+                bookId, BookStatus.AVAILABLE, EnumSet.of(Condition.NEW, Condition.GOOD));
     }
 }

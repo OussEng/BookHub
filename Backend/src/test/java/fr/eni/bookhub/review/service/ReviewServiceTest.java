@@ -122,7 +122,7 @@ public class ReviewServiceTest {
         when(authenticatedUserProvider.getCurrentUser()).thenReturn(user);
         when(bookDao.findById(1L)).thenReturn(Optional.of(book));
         when(reviewDao.existsByUserIdAndBookId(1L, 1L)).thenReturn(false);
-        when(loanDao.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(1L, 1L, LoanStatus.RETURN))
+        when(loanDao.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(1L, 1L, LoanStatus.RETURNED))
                 .thenReturn(false);
 
         // WHEN
@@ -134,7 +134,7 @@ public class ReviewServiceTest {
         verify(authenticatedUserProvider).getCurrentUser();
         verify(bookDao).findById(1L);
         verify(reviewDao).existsByUserIdAndBookId(1L, 1L);
-        verify(loanDao).existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(1L, 1L, LoanStatus.RETURN);
+        verify(loanDao).existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(1L, 1L, LoanStatus.RETURNED);
         verify(reviewDao, never()).save(any());
     }
 
@@ -144,7 +144,7 @@ public class ReviewServiceTest {
         when(authenticatedUserProvider.getCurrentUser()).thenReturn(user);
         when(bookDao.findById(1L)).thenReturn(Optional.of(book));
         when(reviewDao.existsByUserIdAndBookId(1L, 1L)).thenReturn(false);
-        when(loanDao.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(1L, 1L, LoanStatus.RETURN))
+        when(loanDao.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(1L, 1L, LoanStatus.RETURNED))
                 .thenReturn(true);
         when(reviewDao.save(any(Review.class))).thenAnswer(
                 invocation -> invocation.getArgument(0));
@@ -160,7 +160,7 @@ public class ReviewServiceTest {
         verify(authenticatedUserProvider).getCurrentUser();
         verify(bookDao).findById(1L);
         verify(reviewDao).existsByUserIdAndBookId(1L, 1L);
-        verify(loanDao).existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(1L, 1L, LoanStatus.RETURN);
+        verify(loanDao).existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(1L, 1L, LoanStatus.RETURNED);
         verify(reviewDao).save(argThat(r ->
                 r.getId() == null
                         && r.getRating() == 4

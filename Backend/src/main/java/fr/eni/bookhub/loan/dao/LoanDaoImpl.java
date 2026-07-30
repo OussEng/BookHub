@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @AllArgsConstructor
@@ -18,8 +19,8 @@ public class LoanDaoImpl implements ILoanDao{
         return loanRepository.findAll();
     }
 
-    public Loan findById(long id) {
-        return loanRepository.findById(id).get();
+    public Optional<Loan> findById(long id) {
+        return loanRepository.findById(id);
     }
 
     public void save(Loan loan) {

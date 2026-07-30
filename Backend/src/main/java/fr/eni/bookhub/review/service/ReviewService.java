@@ -45,7 +45,7 @@ public class ReviewService {
             throw new ConflictException("Vous avez déjà laissé un avis pour ce livre, vous pouvez le modifier plutôt que d'en créer un nouveau");
         }
 
-        if (!loanDao.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(currentUser.getId(), bookId, LoanStatus.RETURN)) {
+        if (!loanDao.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(currentUser.getId(), bookId, LoanStatus.RETURNED)) {
             throw new AccessDeniedException("Vous ne pouvez pas noter cette ouvrage");
         }
 

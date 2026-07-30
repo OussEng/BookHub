@@ -68,4 +68,12 @@ export class AuthService {
   isAuthenticated(): boolean {
     return this.accessToken !== null;
   }
+
+  isLibrarian(): boolean{
+    return this.currentUser?.role === "ROLE_LIBRARIAN" ? true : false;
+  }
+
+  isAdmin(): boolean{
+    return this.currentUser?.role === "ROLE_ADMIN" ? true : false;
+  }
 }
