@@ -25,18 +25,18 @@ public class ReservationDaoImpl implements IReservationDao {
     }
 
     @Override
-    public long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuts) {
-        return reservationRepository.countByUserAndStatusIn(user, statuts);
+    public long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuses) {
+        return reservationRepository.countByUserAndStatusIn(user, statuses);
     }
 
     @Override
-    public boolean existsByUserAndBookIdAndStatusIn(User user, Long bookId, Collection<ReservationStatus> statuts) {
-        return reservationRepository.existsByUserAndBookIdAndStatusIn(user, bookId, statuts);
+    public boolean existsByUserAndBookIdAndStatusIn(User user, Long bookId, Collection<ReservationStatus> statuses) {
+        return reservationRepository.existsByUserAndBookIdAndStatusIn(user, bookId, statuses);
     }
 
     @Override
-    public long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuts) {
-        return reservationRepository.countByBookIdAndStatusIn(bookId, statuts);
+    public long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuses) {
+        return reservationRepository.countByBookIdAndStatusIn(bookId, statuses);
     }
 
     @Override
@@ -45,8 +45,8 @@ public class ReservationDaoImpl implements IReservationDao {
     }
 
     @Override
-    public boolean existsByBookCopyIdAndStatus(Long bookCopyId, ReservationStatus reservationStatus) {
-        return reservationRepository.existsByBookCopyIdAndStatus(bookCopyId, reservationStatus);
+    public boolean existsByBookCopyIdAndStatus(Long bookCopyId, ReservationStatus status) {
+        return reservationRepository.existsByBookCopyIdAndStatus(bookCopyId, status);
     }
 
     @Override
@@ -76,8 +76,13 @@ public class ReservationDaoImpl implements IReservationDao {
 
     @Override
     public long countByBookIdAndStatusInAndReservesDateBefore(
-            Long bookId, Collection<ReservationStatus> statuts, LocalDateTime reservesDate) {
+            Long bookId, Collection<ReservationStatus> statuses, LocalDateTime reservesDate) {
         return reservationRepository
-                .countByBookIdAndStatusInAndReservesDateBefore(bookId, statuts, reservesDate);
+                .countByBookIdAndStatusInAndReservesDateBefore(bookId, statuses, reservesDate);
+    }
+
+    @Override
+    public Optional<Reservation> findFirstByUserAndBookIdAndStatusIn(User user, Long bookId, Collection<ReservationStatus> statuses) {
+        return reservationRepository.findFirstByUserAndBookIdAndStatusIn(user, bookId, statuses);
     }
 }

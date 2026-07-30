@@ -18,27 +18,17 @@ import java.util.Optional;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-    long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuts);
+    // ─── Lectures simples : aucun verrou ───
+
+    long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuses);
 
     boolean existsByUserAndBookIdAndStatusIn(User user, Long bookId, Collection<ReservationStatus> statuses);
 
-    long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuts);
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Reservation> findFirstByBookIdAndStatusOrderByReservesDateAsc(
-            Long bookId,
-            ReservationStatus status);
+    long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuses);
 
     boolean existsByBookCopyIdAndStatus(Long bookCopyId, ReservationStatus status);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Reservation> findByUserAndBookIdAndStatus(User user, Long bookId, ReservationStatus status);
-
     List<Reservation> findByStatusAndPickupDeadlineBefore(ReservationStatus status, LocalDateTime deadline);
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select r from Reservation r where r.id = :id")
-    Optional<Reservation> findByIdForUpdate(@Param("id") Long id);
 
     // Réservations du lecteur, la plus récente en premier
     List<Reservation> findByUserOrderByReservesDateDesc(User user);
@@ -46,7 +36,24 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // Nombre de réservations actives entrées dans la file avant celle-ci
     long countByBookIdAndStatusInAndReservesDateBefore(
             Long bookId,
-            Collection<ReservationStatus> statuts,
+            Collection<ReservationStatus> statuses,
             LocalDateTime reservesDate);
 
+    Optional<Reservation> findFirstByUserAndBookIdAndStatusIn(
+            User user, Long bookId, Collection<ReservationStatus> statuses);
+
+
+    // ─── Lectures verrouillantes : suffixe ForUpdate ───
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Reservation> findFirstByBookIdAndStatusOrderByReservesDateAsc(
+            Long bookId,
+            ReservationStatus status);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from Reservation r where r.id = :id")
+    Optional<Reservation> findByIdForUpdate(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Reservation> findByUserAndBookIdAndStatus(User user, Long bookId, ReservationStatus status);
 }

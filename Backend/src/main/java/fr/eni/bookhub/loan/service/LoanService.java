@@ -77,8 +77,8 @@ public class LoanService {
     public void createLoan(Long bookId) {
         User currentUser = authenticatedUserProvider.getCurrentUser();
 
-        if (loanRepository.countByLoanerIdAndStatus(currentUser.getId(), LoanStatus.ACTIVE) >= 5) {
-            throw new LoanException("Limite maximum de 5 livres atteinte");
+        if (loanRepository.countByLoanerIdAndStatus(currentUser.getId(), LoanStatus.ACTIVE) >= 3) {
+            throw new LoanException("Limite maximum de 3 livres atteinte");
         }
 
         BookCopy bookCopy = reservationService.fulfillIfReady(currentUser, bookId)
