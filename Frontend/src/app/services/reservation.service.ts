@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ReservationRequest } from '../interfaces/reservation/request/reservation-request.model';
 import { ReservationResponse } from '../interfaces/reservation/response/reservation-response.model';
 
 @Injectable({ providedIn: 'root' })
@@ -10,8 +9,8 @@ export class ReservationService {
 
   constructor(private http: HttpClient) {}
 
-  reserver(request: ReservationRequest): Observable<ReservationResponse> {
-    return this.http.post<ReservationResponse>(this.apiUrl, request);
+  reserver(bookId: number): Observable<ReservationResponse> {
+    return this.http.post<ReservationResponse>(`${this.apiUrl}/${bookId}`, null);
   }
 
   mesReservations(): Observable<ReservationResponse[]> {
