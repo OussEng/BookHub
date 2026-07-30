@@ -19,6 +19,8 @@ public interface IReviewDao {
     Page<Review> findAll(Pageable pageable);
 
     void delete(Review review);
+
+    Page<Review> searchByBookOrAuthor(String search, Pageable pageable);
 }
 
 

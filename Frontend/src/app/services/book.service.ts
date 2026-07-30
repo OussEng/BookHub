@@ -1,13 +1,15 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import { Book } from '../interfaces/book/book';
+import {Book} from '../interfaces/book/book';
+import {environment} from "../../environments/environment";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class BookService {
-    private readonly apiUrl = 'http://localhost:8080/api/books';
+    private readonly apiUrl = `${environment.apiUrl}/books`;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) {
+    }
 
     getAllBooks(): Observable<Book[]> {
         return this.http.get<Book[]>(this.apiUrl);

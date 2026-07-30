@@ -1,7 +1,7 @@
-import {ReviewResponse} from "./response/ReviewResponse";
+import {ReviewResponseModel} from "./response/review-response.model";
 
 export interface ReviewPage {
-    content: ReviewResponse[];
+    content: ReviewResponseModel[];
     totalElements: number;
     totalPages: number;
     number: number;

@@ -30,7 +30,7 @@
         </section>
     }
 
-    <section class="bg-white p-6 rounded-lg shadow-sm">
+    <section class="bg-white p-6 rounded-lg shadow-sm mb-8">
         <h2 class="text-lg font-semibold mb-4">Livres empruntés</h2>
         @if (isLoading()) {
             <div class="py-12 text-center text-slate-500 font-light">
@@ -69,7 +69,73 @@
                     </table>
                 </div>
             } @else {
-                <h2 class="text-lg font-semibold mb-4">Livres empruntés</h2>
+                <p class="text-gray-500 text-sm">Aucune donnée disponible pour le moment.</p>
+            }
+        }
+    </section>
+
+    <section class="bg-white p-6 rounded-lg shadow-sm">
+        <h2 class="text-lg font-semibold mb-4">Mes réservations</h2>
+        @if (isReservationsLoading()) {
+            <div class="py-12 text-center text-slate-500 font-light">
+                Chargement des réservations...
+            </div>
+        } @else {
+            @if (reservations.length > 0) {
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm border-collapse">
+
+                        <thead class="border-b border-slate-200 text-slate-600 font-light">
+                        <tr>
+                            <th class="p-4 pl-6 font-light w-[26%]">Titre</th>
+                            <th class="p-4 font-light w-[16%]">Date de réservation</th>
+                            <th class="p-4 font-light w-[10%]">Position</th>
+                            <th class="p-4 font-light w-[16%]">Statut</th>
+                            <th class="p-4 font-light w-[16%]">À retirer avant</th>
+                            <th class="p-4 pr-6 font-light w-[16%] text-right">Action</th>
+                        </tr>
+                        </thead>
+
+                        <tbody class="divide-y divide-slate-100">
+                            @for (reservation of reservations; track reservation.id) {
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-4 pl-6 font-medium text-slate-950 align-top pt-5">{{ reservation.bookTitle }}</td>
+                                    <td class="p-4 align-top pt-5">{{ reservation.reservesDate | date:'dd/MM/yyyy' }}</td>
+                                    <td class="p-4 align-top pt-5">
+                                        @if (reservation.status === 'PENDING') {
+                                            {{ reservation.rank }}
+                                        } @else {
+                                            <span class="text-slate-300">—</span>
+                                        }
+                                    </td>
+                                    <td class="p-4 align-top pt-5">{{ reservation.status | reservationStatus }}</td>
+                                    <td class="p-4 align-top pt-5">
+                                        @if (reservation.status === 'READY_FOR_PICKUP' && reservation.pickupDeadline) {
+                                            {{ reservation.pickupDeadline | date:'dd/MM/yyyy HH:mm' }}
+                                        } @else {
+                                            <span class="text-slate-300">—</span>
+                                        }
+                                    </td>
+                                    <td class="p-4 pr-6 align-top pt-3 text-right">
+                                        @if (reservation.canBeCancelled) {
+                                            <button
+                                                    (click)="cancelReservation(reservation.id)"
+                                                    [disabled]="isCancelling() === reservation.id"
+                                                    class="border border-rose-600 text-rose-600 px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-rose-50 disabled:opacity-50 transition shadow-sm">
+                                                Annuler
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td colspan="6" class="py-8 text-center text-slate-400 font-light">Aucune réservation trouvée.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            } @else {
                 <p class="text-gray-500 text-sm">Aucune donnée disponible pour le moment.</p>
             }
         }

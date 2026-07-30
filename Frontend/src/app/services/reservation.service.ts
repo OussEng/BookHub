@@ -1,24 +1,39 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { ReservationResponse } from '../interfaces/reservation/response/reservation-response.model';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {ReservationResponse} from '../interfaces/reservation/response/reservation-response.model';
+import {environment} from "../../environments/environment";
+import {BookActionResponse} from "../interfaces/reservation/response/book-action.model";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class ReservationService {
-  private readonly apiUrl = 'http://localhost:8080/api/reservations';
+    private readonly apiUrl = `${environment.apiUrl}/reservations`;
 
-  constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) {
+    }
 
-  reserver(bookId: number): Observable<ReservationResponse> {
-    return this.http.post<ReservationResponse>(`${this.apiUrl}/${bookId}`, null);
-  }
+    reserver(bookId: number): Observable<ReservationResponse> {
+        return this.http.post<ReservationResponse>(`${this.apiUrl}/${bookId}`, null);
+    }
 
-  mesReservations(): Observable<ReservationResponse[]> {
-    return this.http.get<ReservationResponse[]>(`${this.apiUrl}/my`);
+    mesReservations(): Observable<ReservationResponse[]> {
+        return this.http.get<ReservationResponse[]>(`${this.apiUrl}/my`);
 
-  }
+    }
 
-  annuler(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
+    annuler(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    }
+
+    getAvailableAction(bookId: number): Observable<BookActionResponse> {
+        return this.http.get<BookActionResponse>(`${this.apiUrl}/book/${bookId}/action`, { withCredentials: true });
+    }
+
+    createReservation(bookId: number): Observable<void> {
+        return this.http.post<void>(`${this.apiUrl}/${bookId}`, {}, { withCredentials: true });
+    }
+
+    cancelReservation(reservationId: number): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/${reservationId}`, { withCredentials: true });
+    }
 }

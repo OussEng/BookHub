@@ -1,0 +1,26 @@
+<div class="p-6 bg-white rounded-3xl max-w-md">
+    <h2 class="font-serif text-2xl font-normal text-slate-950 mb-4">
+        Confirmer la suppression
+    </h2>
+
+    <p class="text-slate-600 text-sm font-light mb-6 leading-relaxed">
+        Êtes-vous sûr de vouloir supprimer le commentaire de <strong class="font-medium text-slate-900">{{ data.review.username }}</strong>
+        sur <strong class="font-medium text-slate-900">"{{ data.review.bookTitle }}"</strong> ?
+        Cette action est irréversible. La note restera visible, seul le commentaire sera masqué.
+    </p>
+
+    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <button
+                type="button"
+                (click)="onCancel()"
+                class="px-5 py-2.5 rounded-full text-xs font-light border border-slate-300 text-slate-700 hover:bg-slate-50 transition">
+            Annuler
+        </button>
+        <button
+                type="button"
+                (click)="onConfirm()"
+                class="px-5 py-2.5 rounded-full text-xs font-light bg-rose-600 text-white hover:bg-rose-700 transition shadow-sm">
+            Supprimer
+        </button>
+    </div>
+</div>

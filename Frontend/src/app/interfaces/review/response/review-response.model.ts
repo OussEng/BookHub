@@ -1,4 +1,4 @@
-export interface ReviewResponse {
+export interface ReviewResponseModel {
     id: number;
     userId: number;
     username: string;
