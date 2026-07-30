@@ -17,7 +17,7 @@ export class Home implements OnInit {
   protected isLoading = signal<boolean>(true);
   defaultCoverUrl = 'assets/images/default.png';
 
-
+  protected latestBook = signal<Book | null>(null);
   
   protected currentPage = signal<number>(0);
   protected totalPages = signal<number>(0);
@@ -33,6 +33,14 @@ export class Home implements OnInit {
 
   ngOnInit(): void {
     this.loadBooks(0);
+    this.loadLatestBook();
+  }
+
+  loadLatestBook(): void {
+    this.bookService.getLatestBook().subscribe({
+      next: (book) => this.latestBook.set(book),
+      error: (err) => console.error('Error fetching latest book:', err)
+    });
   }
 
   loadBooks(page: number): void {
