@@ -171,4 +171,10 @@ public class BookService {
         }
         bookRepository.deleteById(id);
     }
+
+    public BookResponse getLatestBook() {
+        return bookRepository.findTopByOrderByIdDesc()
+                .map(BookResponse::fromBookEntity)
+                .orElseThrow(() -> new EntityNotFoundException("No books found"));
+    }
 }

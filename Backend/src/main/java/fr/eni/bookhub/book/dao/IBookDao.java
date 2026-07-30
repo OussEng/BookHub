@@ -16,5 +16,6 @@ public interface IBookDao {
     boolean existsById(Long id);
     void deleteById(Long id);
     List<Book> findAll();
+    Optional<Book> findTopByOrderByIdDesc();
     
 }

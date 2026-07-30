@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
@@ -84,6 +85,7 @@ public class BookController {
         return ResponseEntity.ok(bookService.getBookById(id));
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BookResponse> createBook(
             @RequestPart("book") @Valid BookCreateRequest bookDto,
@@ -93,7 +95,7 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BookResponse> updateBook(
             @PathVariable Long id,
@@ -104,10 +106,16 @@ public class BookController {
         return ResponseEntity.ok(updatedBook);
     }
 
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<BookResponse> getLatestBook() {
+        return ResponseEntity.ok(bookService.getLatestBook());
     }
 
 

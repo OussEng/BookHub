@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 
@@ -37,6 +39,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             @Param("genreId") Long genreId,
             Pageable pageable
     );
+
+    Optional<Book> findTopByOrderByIdDesc();
 
 }
 
