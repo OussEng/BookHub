@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ReservationResponse } from '../interfaces/reservation/response/reservation-response.model';
+import { BookActionResponse } from '../interfaces/reservation/response/book-action-response.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReservationService {
@@ -29,6 +30,13 @@ export class ReservationService {
   // prête et la clôt en FULFILLED. Il n'y a pas d'endpoint « Prendre ».
   prendre(bookId: number): Observable<void> {
     return this.http.post<void>(`${this.loansUrl}/${bookId}/borrow`, null);
+  }
+
+  // Le back décide seul de l'action possible sur un livre : emprunter,
+  // retirer, réserver, annuler, ou rien avec la raison. La fiche livre
+  // n'a plus à croiser book.available avec l'état des exemplaires.
+  actionPour(bookId: number): Observable<BookActionResponse> {
+    return this.http.get<BookActionResponse>(`${this.apiUrl}/book/${bookId}/action`);
   }
 
 }
