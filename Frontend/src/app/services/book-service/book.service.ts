@@ -8,51 +8,56 @@ import { Page } from '../../interfaces/page/page';
 
 @Injectable({ providedIn: 'root' })
 export class BookService {
+ 
+  private readonly apiUrl = 'http://localhost:8080/api/books';
+  
 
-    private readonly apiUrl = 'http://localhost:8080/api/books';
+  constructor(private http: HttpClient) {
 
-
-    constructor(private http: HttpClient) {
-
-    }
+  }
 
 
     getBooks(
-        page: number = 0,
-        size: number = 20,
-        search?: string,
-        genreId?: number,
-        sortBy: string = 'id',
-        sortDir: string = 'desc'
-    ): Observable<Page<Book>> {
-        let params = new HttpParams()
-            .set('page', page.toString())
-            .set('size', size.toString())
-            .set('sortBy', sortBy)
-            .set('sortDir', sortDir);
+    page: number = 0,
+    size: number = 20,
+    search?: string,
+    genreId?: number,
+    sortBy: string = 'id',
+    sortDir: string = 'desc'
+  ): Observable<Page<Book>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('sortDir', sortDir);
 
-        if (search && search.trim() !== '') {
-            params = params.set('search', search.trim());
-        }
-        if (genreId !== undefined && genreId !== null) {
-            params = params.set('genreId', genreId.toString());
-        }
-
-        return this.http.get<Page<Book>>(`${this.apiUrl}/all`, { params });
+    if (search && search.trim() !== '') {
+      params = params.set('search', search.trim());
+    }
+    if (genreId !== undefined && genreId !== null) {
+      params = params.set('genreId', genreId.toString());
     }
 
-    getBookById(id: number): Observable<Book> {
-        return this.http.get<any>(`${this.apiUrl}/${id}`);
-    }
+    return this.http.get<Page<Book>>(`${this.apiUrl}/all`, { params });
+  }
 
-    createBook(formData: FormData): Observable<Book> {
-        return this.http.post<Book>(this.apiUrl, formData);
-    }
+  getBookById(id: number): Observable<Book> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
+  
+  createBook(formData: FormData): Observable<Book> {
+    return this.http.post<Book>(this.apiUrl, formData);
+  }
 
 
-    createBookWithImage(formData: FormData): Observable<Book> {
-        return this.http.post<Book>(this.apiUrl, formData);
-    }
+  createBookWithImage(formData: FormData): Observable<Book> {
+  return this.http.post<Book>(this.apiUrl, formData);
+  }
+
+
+  updateBookWithImage(id: number, formData: FormData): Observable<Book> {
+    return this.http.put<Book>(`${this.apiUrl}/${id}`, formData);
+  }
 
 
 }

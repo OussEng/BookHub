@@ -1,6 +1,7 @@
 package fr.eni.bookhub.book.controller;
 
 import fr.eni.bookhub.book.dto.request.create.BookCreateRequest;
+import fr.eni.bookhub.book.dto.request.update.BookUpdateRequest;
 import fr.eni.bookhub.book.dto.response.BookResponse;
 import fr.eni.bookhub.book.service.BookService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -90,4 +91,17 @@ public class BookController {
         BookResponse created = bookService.createBook(bookDto, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
+
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BookResponse> updateBook(
+            @PathVariable Long id,
+            @RequestPart("book") @Valid BookUpdateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        BookResponse updatedBook = bookService.updateBook(id, request, image);
+        return ResponseEntity.ok(updatedBook);
+    }
+
+
 }

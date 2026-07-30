@@ -14,6 +14,7 @@ import { Genre } from '../../../../interfaces/genre/genre';
 import { AuthorService } from '../../../../services/author-service/author.service';
 import { GenreService } from '../../../../services/genre-service/genre.service';
 import { FlashMessageService } from '../../../../services/flash-message-service/flash-message-service';
+import { BookUpdateModal } from '../../../../components/modals/book-update-modal/book-update-modal';
 
 @Component({
   selector: 'app-librarian-book-catalogue',
@@ -150,5 +151,56 @@ export class LibrarianBookCatalogue {
   }
 });
     
+  }
+
+
+  openUpdateBookModal(bookId: number): void {
+  // 1. Ensure dropdown lists (authors/genres) are loaded
+  if (this.authors().length === 0 || this.genres().length === 0) {
+    this.loadDropdownData();
+  }
+
+  // 2. Fetch full book details (with authorIds and genreIds) from backend
+  this.bookService.getBookById(bookId).subscribe({
+    next: (bookDetail) => {
+      const dialogRef = this.dialog.open(BookUpdateModal, {
+        width: '500px',
+        data: {
+          bookDetail,
+          authors: this.authors(),
+          genres: this.genres()
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          const { imageFile, authors, genres, ...rest } = result;
+
+          const bookData = {
+            ...rest,
+            authorIds: authors,
+            genreIds: genres
+          };
+
+          const formData = new FormData();
+          formData.append('book', new Blob([JSON.stringify(bookData)], { type: 'application/json' }));
+          
+          if (imageFile) {
+            formData.append('image', imageFile);
+          }
+
+          this.bookService.updateBookWithImage(bookId, formData).subscribe({
+            next: () => {
+              this.loadBooks(this.currentPage());
+              this.flashService.success("Livre mis à jour avec succès !");
+            },
+            error: (err) => console.error('Error updating book', err)
+          });
+        }
+      });
+    },
+    error: (err) => console.error('Error loading book details', err)
+  });
+
   }
 }
