@@ -10,14 +10,41 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class NavBar {
 
+
+  isMobileMenuOpen = signal(false);
+  isGestionDropdownOpen = signal(false);
+
+
   constructor(
     private authservice: AuthService,
     private router : Router,
   
   ) {}
 
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update(value => !value);
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+  }
+
+  toggleGestionDropdown(): void {
+    this.isGestionDropdownOpen.update(value => !value);
+  }
+
+  closeGestionDropdownWithDelay(): void {
+    setTimeout(() => {
+      this.isGestionDropdownOpen.set(false);
+    }, 150);
+  }
+
   isAuthenticated(){
     return this.authservice.isAuthenticated()
+  }
+
+  isLibrarian(){
+    return this.authservice.isLibrarian()
   }
 
   logout(){
