@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -27,6 +28,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 
 
 @RequiredArgsConstructor
@@ -45,11 +47,9 @@ public class BookService {
 
     private final IBookDao bookRepository;
 
-    public List<BookResponse> getAllBooks() {
-        List<Book> books = bookRepository.findAll();
-        return books.stream()
-                .map(BookResponse::fromBookEntity)
-                .toList();
+    public Page<BookResponse> getAllBooks(String search, Long genreId, Pageable pageable) {
+        return bookRepository.searchBooks(search, genreId, pageable)
+                .map(BookResponse::fromBookEntity);
     }
 
     public BookResponse getBookById(Long id) {

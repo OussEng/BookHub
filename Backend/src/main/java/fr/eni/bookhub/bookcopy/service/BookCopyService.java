@@ -13,6 +13,8 @@ import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.entity.Condition;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
 import fr.eni.bookhub.exception.custom.ConflictException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -67,10 +69,14 @@ public class BookCopyService {
         return BookCopyResponse.fromBookCopyEntity(savedCopy);
     }
 
-    public List<BookCopyResponse> getCopiesByBookId(Long bookId) {
-        List<BookCopy> copies = bookCopyRepository.findByBookId(bookId);
-        return copies.stream()
-                .map(BookCopyResponse::fromBookCopyEntity)
-                .toList();
+    public Page<BookCopyResponse> getCopiesByBookId(
+            Long bookId,
+            String serialNumber,
+            Condition condition,
+            Pageable pageable
+    ) {
+        return bookCopyRepository
+                .findCopiesByBookIdWithFilters(bookId, serialNumber, condition, pageable)
+                .map(BookCopyResponse::fromBookCopyEntity);
     }
 }

@@ -28,18 +28,45 @@
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-8">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <input type="text" placeholder="Titre ou Auteur" class="col-span-2 p-2 border rounded-lg focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857]">
-        <select class="p-2 border rounded-lg focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] bg-white">
-          <option>Tous les statuts</option>
-          <option>Disponible</option>
-          <option>Emprunté</option>
-        </select>
-        <button class="bg-[#FFC857] text-gray-950 font-semibold py-2 px-4 rounded-lg hover:bg-[#e5b34e] transition duration-150 shadow-sm">
-          Rechercher
-        </button>
-      </div>
-    </div>
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+    
+    
+    <input 
+      #searchInputRef
+      type="text" 
+      placeholder="Titre, Auteur ou ISBN..." 
+      (keyup.enter)="onSearch(searchInputRef.value, genreSelectRef.value, sortSelectRef.value)"
+      class="col-span-2 p-2.5 border rounded-lg focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] text-sm">
+
+    
+    <select 
+      #genreSelectRef
+      class="p-2.5 border rounded-lg focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] bg-white text-sm">
+      <option value="">Toutes les catégories</option>
+      <option value="1">Science Fiction</option>
+      <option value="2">Dystopian</option>
+      <option value="3">Classic Literature</option>
+    </select>
+
+    
+    <select 
+      #sortSelectRef
+      class="p-2.5 border rounded-lg focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] bg-white text-sm">
+      <option value="id,desc">Plus récents</option>
+      <option value="title,asc">Titre (A-Z)</option>
+      <option value="title,desc">Titre (Z-A)</option>
+      <option value="publishDate,desc">Date de parution (Récents)</option>
+      <option value="publishDate,asc">Date de parution (Anciens)</option>
+    </select>
+
+    
+    <button 
+      (click)="onSearch(searchInputRef.value, genreSelectRef.value, sortSelectRef.value)"
+      class="bg-[#FFC857] text-gray-950 font-bold py-2.5 px-4 rounded-lg hover:bg-[#e5b34e] transition duration-150 shadow-sm text-sm">
+      Rechercher
+    </button>
+  </div>
+</div>
 
     @if (isLoading()) {
       <div class="flex justify-center items-center py-20">
@@ -63,7 +90,6 @@
               >
               
               <div class="p-5 flex flex-col flex-grow">
-                <!-- Text Details -->
                 <h2 class="text-lg font-bold text-gray-800 mb-1 line-clamp-2 group-hover:text-[#FFC857] transition-colors">
                   {{ book.title }}
                 </h2>
@@ -101,6 +127,65 @@
         
       </div>
     }
+
+    @if (totalPages() > 1) {
+        <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-xl shadow-sm mb-12">
+          
+          <div class="flex flex-1 justify-between sm:hidden">
+            <button 
+              (click)="goToPage(currentPage() - 1)" 
+              [disabled]="currentPage() === 0"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+              Précédent
+            </button>
+            <button 
+              (click)="goToPage(currentPage() + 1)" 
+              [disabled]="currentPage() >= totalPages() - 1"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+              Suivant
+            </button>
+          </div>
+
+          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm text-gray-700">
+                Affichage de <span class="font-semibold">{{ currentPage() * pageSize + 1 }}</span>
+                à <span class="font-semibold">{{ endIndex }}</span>
+                sur <span class="font-semibold">{{ totalElements() }}</span> résultats
+              </p>
+            </div>
+            <div>
+              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm gap-1" aria-label="Pagination">
+                <button 
+                  (click)="goToPage(currentPage() - 1)"
+                  [disabled]="currentPage() === 0"
+                  class="relative inline-flex items-center rounded-l-md px-3 py-2 text-gray-500 border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                  ‹
+                </button>
+
+                @for (page of [].constructor(totalPages()); track $index) {
+                  <button 
+                    (click)="goToPage($index)"
+                    [class]="$index === currentPage() 
+                      ? 'bg-[#FFC857] text-gray-950 font-bold border-[#FFC857]' 
+                      : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-300'"
+                    class="relative inline-flex items-center px-4 py-2 text-sm border rounded-md font-medium transition-colors">
+                    {{ $index + 1 }}
+                  </button>
+                }
+
+                <button 
+                  (click)="goToPage(currentPage() + 1)"
+                  [disabled]="currentPage() >= totalPages() - 1"
+                  class="relative inline-flex items-center rounded-r-md px-3 py-2 text-gray-500 border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                  ›
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      }
+    
 
   </main>
 </div>
