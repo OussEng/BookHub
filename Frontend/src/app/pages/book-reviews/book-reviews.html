@@ -1,0 +1,105 @@
+<!-- components/book-reviews/book-reviews.html -->
+<div class="mt-10 max-w-5xl mx-auto px-4">
+    <h2 class="text-xl font-bold text-gray-900 mb-6">Avis des lecteurs</h2>
+
+    @if (authService.isAuthenticated()) {
+        <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <button
+                            type="button"
+                            (click)="newRating.set(star)"
+                            class="text-2xl"
+                            [class.text-yellow-400]="star <= newRating()"
+                            [class.text-gray-300]="star > newRating()">
+                        ★
+                    </button>
+                }
+            </div>
+            <textarea
+                    [(ngModel)]="newComment"
+                    maxlength="1000"
+                    rows="3"
+                    placeholder="Votre avis (facultatif)"
+                    class="w-full rounded-lg border border-gray-200 p-3 text-sm"
+            ></textarea>
+            <button
+                    (click)="submitReview()"
+                    [disabled]="newRating() === 0 || isSubmitting()"
+                    class="mt-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold py-2 px-5 rounded-lg text-sm">
+                Publier mon avis
+            </button>
+        </div>
+    }
+
+    @if (isLoading()) {
+        <div class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+    } @else if (errorMessage()) {
+        <p class="text-red-600 text-sm">{{ errorMessage() }}</p>
+    } @else if (reviews().length === 0) {
+        <div class="bg-white rounded-2xl shadow-xl p-6 text-center">
+            <p class="text-gray-500 text-sm">Aucun avis pour ce livre pour le moment.</p>
+        </div>
+    } @else {
+        <div class="space-y-4">
+            @for (review of reviews(); track review.id) {
+                <div class="bg-white rounded-2xl shadow-xl p-6">
+                    @if (editingReviewId() === review.id) {
+                        <div class="flex items-center gap-2 mb-2">
+                            @for (star of [1, 2, 3, 4, 5]; track star) {
+                                <button
+                                        type="button"
+                                        (click)="editRating.set(star)"
+                                        class="text-xl"
+                                        [class.text-yellow-400]="star <= editRating()"
+                                        [class.text-gray-300]="star > editRating()">
+                                    ★
+                                </button>
+                            }
+                        </div>
+                        <textarea
+                                [(ngModel)]="editComment"
+                                maxlength="1000"
+                                rows="2"
+                                class="w-full rounded-lg border border-gray-200 p-2 text-sm mb-2"
+                        ></textarea>
+                        <div class="flex gap-2">
+                            <button (click)="submitEdit(review.id)" class="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg">Enregistrer</button>
+                            <button (click)="cancelEdit()" class="text-sm text-gray-500 px-3 py-1">Annuler</button>
+                        </div>
+                    } @else {
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-900 text-sm">{{ review.username }}</span>
+                            <span class="text-yellow-400 text-sm">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <span [class.text-gray-300]="star > review.rating">★</span>
+                }
+              </span>
+                        </div>
+                        @if (review.moderated) {
+                            <p class="text-gray-400 text-sm italic">Commentaire modéré</p>
+                        } @else if (review.comment) {
+                            <p class="text-gray-700 text-sm">{{ review.comment }}</p>
+                        }
+                        @if (isOwnReview(review)) {
+                            <div class="flex gap-3 mt-3 pt-3 border-t border-gray-100">
+                                <button (click)="startEdit(review)" class="text-xs text-blue-600 font-medium">Modifier</button>
+                                <button (click)="deleteReview(review.id)" class="text-xs text-red-600 font-medium">Supprimer</button>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        @if (totalPages() > 1) {
+            <div class="flex justify-center gap-2 mt-6">
+                <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 0" class="text-sm px-3 py-1 rounded-lg border disabled:opacity-40">Précédent</button>
+                <span class="text-sm text-gray-500 px-2 py-1">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
+                <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() + 1 >= totalPages()" class="text-sm px-3 py-1 rounded-lg border disabled:opacity-40">Suivant</button>
+            </div>
+        }
+    }
+</div>

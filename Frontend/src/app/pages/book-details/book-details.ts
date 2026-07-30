@@ -3,11 +3,12 @@ import {CommonModule} from '@angular/common';
 import {RouterLink} from '@angular/router';
 import {BookService} from '../../services/book-service/book.service';
 import {LoansService} from "../../services/loans.service";
+import {BookReviews} from "../book-reviews/book-reviews";
 
 @Component({
     selector: 'app-book-details',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule, RouterLink, BookReviews],
     templateUrl: './book-details.html',
     styleUrl: './book-details.css',
 })
