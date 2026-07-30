@@ -121,7 +121,7 @@ export class MesReservations implements OnInit, OnDestroy {
     libelleStatut(statut: ReservationStatus): string {
         switch (statut) {
             case 'PENDING':   return "En attente";
-            case 'READY_FOR_PICKUP': return "Disponible";
+            case 'READY_FOR_PICKUP': return "Réservée pour vous";
             case 'FULFILLED': return "Empruntée";
             case 'CANCELLED': return "Annulée";
             case 'EXPIRED':   return "Expirée";
