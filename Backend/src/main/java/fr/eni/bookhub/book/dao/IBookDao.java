@@ -14,4 +14,6 @@ public interface IBookDao {
     Book save(Book book);
 
     Page<Book> searchBooks(String search, Long genreId, Pageable pageable);
+    List<Book> findAll();
+    boolean existsById(Long id);
 }

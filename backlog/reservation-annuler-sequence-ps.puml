@@ -1,0 +1,103 @@
+@startuml
+title US-RESA-02 — Annuler une réservation
+
+actor Lecteur
+participant "ReservationController" as C
+participant "ReservationService" as S
+participant "IReservationDao" as RD
+box "SQL Server — base bookhub" #F5F5F5
+database "table\nreservation" as TRES
+database "procédure\nusp_promouvoir_file" as P
+database "table\nbook_copies" as TBC
+end box
+participant "GlobalExceptionHandler" as E
+
+Lecteur -> C : DELETE /api/reservations/{id}
+activate C
+note right of C : l'utilisateur connecté vient du jeton JWT\nendpoint ouvert à USER, LIBRARIAN et ADMIN\n(rôles cumulatifs)\n--\nles statuts non qualifiés sont ceux de la\nréservation ; les autres portent le nom\nde leur énumération\n--\naucun corps de requête : l'identifiant est\ndans le chemin, son type est vérifié par Spring.\nPas de 400 possible ici.
+
+C -> S : annuler(reservationId, user)
+activate S
+
+group @Transactional
+
+    note right of S : l'annulation et l'avancée de la file\ntiennent dans une même transaction.\nLa procédure n'ouvre pas la sienne :\nc'est l'appelant qui la porte.
+
+    S -> RD : findById(reservationId)
+    RD --> S : réservation ou vide
+
+    alt la réservation n'existe pas
+        S -> E : lève ResourceNotFoundException
+        E --> Lecteur : 404 réservation introuvable
+
+    else la réservation existe
+
+        alt elle appartient à un autre lecteur
+            S -> E : lève AccessDeniedException
+            E --> Lecteur : 403 vous ne pouvez pas annuler\nla réservation d'un autre utilisateur
+            note right of S : même convention que ReviewService :\nla suppression du bien d'autrui lève\nAccessDeniedException, traduite en 403\npar le GlobalExceptionHandler existant.\nLe lecteur ne peut annuler que les siennes.
+
+        else elle appartient au lecteur connecté
+
+            alt statut hors ACTIFS
+                S -> E : lève ConflictException
+                E --> Lecteur : 409 réservation déjà close
+                note right of S : ACTIFS = { PENDING, AVAILABLE }\nune réservation FULFILLED, CANCELLED ou\nEXPIRED est dans un état final :\nrien à annuler.
+
+            else statut PENDING ou AVAILABLE
+
+                S -> RD : save(statut = CANCELLED)
+                RD -> TRES : UPDATE reservation
+                note right of RD : CANCELLED est réservé à l'annulation.\nL'expiration des 72h pose EXPIRED :\nles deux ne sont pas interchangeables,\nla distinction est voulue.\n--\nLa ligne n'est pas supprimée : l'historique\ndu lecteur reste consultable.\n--\nORDRE OBLIGATOIRE : le statut passe à CANCELLED\nAVANT tout appel à la procédure — voir\nl'étape 3 plus bas.
+
+                note right of S : le statut d'origine est retenu AVANT\nl'écriture : après le save il vaut CANCELLED,\nla base ne peut plus dire d'où l'on vient.
+
+                alt la réservation était PENDING
+                    note right of S : aucun exemplaire n'était mis de côté :\nle lecteur attendait son tour.\nRien d'autre à faire — les rangs des suivants\nne sont pas stockés, ils se recalculent\nà chaque lecture.
+
+                else la réservation était AVAILABLE
+
+                    note right of S : un exemplaire était mis de côté pour ce\nlecteur (book_status = RESERVED) et personne\nd'autre ne pouvait l'emprunter. En renonçant,\nil le rend : il doit repartir au suivant,\nou redevenir empruntable par tous.\n--\nTroisième des trois chemins vers la procédure.\nLes deux autres : le déclencheur sur loans\nau retour d'un exemplaire, et la tâche\nd'expiration des 72h.
+
+                    S -> RD : promouvoirFile(bookId, bookCopyId)
+                    note right of RD : le service passe par le DAO, jamais\ndirectement par la base. Le DAO expose\nla procédure via une méthode annotée\n@Procedure sur le repository.
+                    RD -> P : EXEC usp_promouvoir_file\n(@book_id, @book_copy_id, @promu OUTPUT)
+                    activate P
+
+                    P -> TRES : 1. SELECT la PENDING la plus ancienne\nde ce livre (ordre par reserves_date)\nWITH (UPDLOCK, ROWLOCK, READPAST)
+                    note right of P : logique écrite une seule fois, dans la base :\nles trois chemins se comportent exactement\npareil.\n--\nUPDLOCK et READPAST ferment la course :\nsi un retour survient au même instant sur\nun autre exemplaire du même livre, le second\nappel passe au suivant de la file au lieu\nd'attendre — sans quoi les deux promouvraient\nle même lecteur.
+
+                    alt aucune réservation en attente
+                        P -> TBC : 2. UPDATE book_copies\nRESERVED → AVAILABLE
+                        note right of P : personne n'attend : l'exemplaire\nredevient empruntable par tous.\nSans cette remise à AVAILABLE il resterait\nbloqué pour toujours.
+
+                    else une file existe
+                        P -> TRES : 3. l'exemplaire est-il déjà tenu par une\nautre réservation AVAILABLE ?
+
+                        alt oui, il est déjà mis de côté pour un autre
+                            note right of P : la procédure ressort sans rien écrire.\nElle refuse de voler un exemplaire déjà\npromis. C'est cette étape qui impose de\npasser la réservation annulée à CANCELLED\nAVANT l'appel : sinon elle se verrait\nelle-même ici et bloquerait la file.
+
+                        else non, il est libre
+                            P -> TBC : 4. UPDATE book_copies\nbook_status = RESERVED
+                            P -> TRES : 5. UPDATE le PREMIER :\nstatut = AVAILABLE,\nbook_copy_id = l'exemplaire libéré,\nnotified_at = SYSUTCDATETIME(),\npickup_deadline = notified_at + 72h
+                            note right of P : l'exemplaire ne repart pas sur l'étagère :\nil glisse directement au suivant, qui\ndispose à son tour de 72h pour cliquer.\n--\nHeure UTC des deux côtés : Java écrit\nreserves_date en UTC, la base fait de même.\n--\npickup_deadline est stockée et non recalculée :\nun changement futur du délai ne doit pas\ndéplacer les échéances déjà annoncées.\n--\nZéro ligne touchée à cette étape — exemplaire\nperdu, en réparation ou déjà repris — et la\nprocédure ressort sans promouvoir personne,\nplutôt que de laisser une réservation pointer\nsur du vide.
+                        end
+                    end
+
+                    P --> RD : @promu (1 si quelqu'un a été promu)
+                    deactivate P
+                    RD --> S : fin de l'appel
+                end
+
+                S --> C : void
+                C --> Lecteur : 204 No Content
+            end
+        end
+    end
+
+end
+
+deactivate S
+deactivate C
+
+@enduml

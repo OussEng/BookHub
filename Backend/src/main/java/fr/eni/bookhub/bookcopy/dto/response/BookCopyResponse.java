@@ -18,6 +18,7 @@ public class BookCopyResponse {
     private final boolean canBeLoaned;
     private final boolean canBeReserved;
 
+
     public static BookCopyResponse fromBookCopyEntity(BookCopy copy) {
         boolean goodCondition = copy.getCondition() == Condition.NEW
                 || copy.getCondition() == Condition.GOOD;

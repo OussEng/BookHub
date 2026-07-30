@@ -1,0 +1,102 @@
+@startuml
+title US-RESA-01 — Réserver un livre
+
+actor Lecteur
+participant "ReservationController" as C
+participant "ReservationService" as S
+participant "IBookDao" as BD
+participant "IReservationDao" as RD
+participant "ILoanDao" as LD
+participant "IBookCopyDao" as BCD
+participant "GlobalExceptionHandler" as E
+
+Lecteur -> C : POST /api/reservations\n{ bookId }
+activate C
+note right of C : l'utilisateur connecté vient du jeton JWT\nendpoint ouvert à USER, LIBRARIAN et ADMIN\n(rôles cumulatifs)\n--\nles statuts non qualifiés sont ceux de la\nréservation ; les autres portent le nom\nde leur énumération\n--\nle service passe par les DAO, jamais\ndirectement par les repositories
+
+alt corps de requête invalide (bookId manquant ou mal typé)
+    C --> Lecteur : 400 requête mal formée
+    note right of C : format vérifié avant le service :\nJackson à la désérialisation, pour le type ;\n@Valid pour les champs obligatoires.\nMethodArgumentNotValidException est traduite\npar le GlobalExceptionHandler existant.\nN'atteint jamais la logique métier.
+
+else corps de requête valide
+
+    C -> S : reserver(bookId, user)
+    activate S
+
+    group @Transactional
+
+        note right of S : contrôles et écriture dans une même transaction.\nAucun verrou n'est posé sur le livre : un retour\nsimultané peut rendre un exemplaire disponible\nentre le contrôle RG-RESA-02 et l'enregistrement.\nRisque accepté : la fenêtre est étroite et la\nconséquence est une réservation de plus sur un\nlivre redevenu disponible, sans effet durable.\n--\nOrdre des contrôles, en deux temps :\n1. ce qui rend la réservation inutile —\n   le livre n'existe pas, ou un exemplaire est libre ;\n2. ce qui l'interdit pour ce lecteur et ce livre —\n   plafond, emprunt en cours, doublon.\n--\nLe retard n'est pas contrôlé ici : il bloque\nl'emprunt (RG-LOAN-03), pas l'entrée dans la file.\nLe contrôle vit sur l'endpoint « Prendre ».
+
+        S -> BD : findById(bookId)
+        BD --> S : livre ou vide
+
+        alt le livre n'existe pas
+            S -> E : lève ResourceNotFoundException
+            E --> Lecteur : 404 livre introuvable
+
+        else le livre existe
+
+            S -> BCD : existsByBook_IdAndBookStatus\n(bookId, BookStatus.AVAILABLE)
+            note right of BCD : l'énumération s'appelle BookStatus\n(paquet bookcopy) ; le champ de BookCopy\nporte le même nom
+            BCD --> S : true
+
+            alt un exemplaire est disponible (RG-RESA-02)
+                S -> E : lève ConflictException
+                E --> Lecteur : 409 le livre est disponible,\nempruntez-le directement
+
+            else tous les exemplaires sont empruntés
+
+                S -> RD : countByUserAndStatusIn\n(user, ReservationStatus.ACTIFS)
+                RD --> S : nombre de réservations actives
+                note right of RD : ACTIFS = { PENDING, AVAILABLE }\nensemble défini dans l'énumération,\nseul endroit où ces statuts sont listés\n--\nCompté sur le LECTEUR, pas sur le livre :\nRG-RESA-01 plafonne les réservations d'un\nlecteur, pas la longueur de la file.
+
+                alt déjà 5 réservations actives (RG-RESA-01)
+                    S -> E : lève ConflictException
+                    E --> Lecteur : 409 limite de 5 réservations atteinte
+
+                else moins de 5
+
+                    S -> LD : existsByLoanerIdAndBookCopyLoanedBookIdAndStatus\n(user.getId(), bookId, LoanStatus.ACTIVE)
+                    note right of LD : dans Loan, les champs s'appellent loaner\net bookCopyLoaned : les méthodes dérivées\nse construisent sur ces noms.\nL'emprunt porte sur un exemplaire :\nle livre est atteint via book_copy.\n--\nStatuts arrêtés par l'équipe : ACTIVE et\nRETURNED seulement. Le retard se déduit\nde due_date, il n'est pas un statut.\nL'énumération de la branche en cours compte\nencore quatre valeurs : à aligner.
+                    LD --> S : true
+
+                    alt le lecteur détient déjà ce livre (RG-RESA-04)
+                        S -> E : lève ConflictException
+                        E --> Lecteur : 409 livre déjà emprunté
+
+                    else le lecteur ne détient pas ce livre
+
+                        S -> RD : existsByUserAndBookIdAndStatusIn\n(user, bookId, ReservationStatus.ACTIFS)
+                        RD --> S : true
+
+                        alt déjà réservé ce livre
+                            S -> E : lève ConflictException
+                            E --> Lecteur : 409 livre déjà réservé
+
+                        else pas encore réservé
+
+                            S -> RD : save(new Reservation(user, livre),\nstatut PENDING,\nreservesDate = horodatage courant UTC)
+                            note right of RD : reservesDate fixe l'ordre de la file.\nHeure UTC obligatoire : le déclencheur SQL\nécrit lui aussi dans cette table.\n--\nLe constructeur prend l'entité Book, non son\nidentifiant : la réservation porte désormais\nune association @ManyToOne.\n--\nUn index unique filtré sur (users_id, book_id)\npour les statuts actifs interdit le doublon\nen cas de double envoi : le contrôle applicatif\nne suffit pas à fermer la course.
+                            RD --> S : réservation créée
+
+                            S -> RD : countByBookIdAndStatusIn\n(bookId, ReservationStatus.ACTIFS)
+                            RD --> S : rang
+                            note right of RD : appelé après le save : la réservation\nvient de fermer la file, la taille de\nla file vaut donc son rang
+
+                            S --> C : ReservationResponse\n(id, bookId, reservesDate, rank, status)
+                            C --> Lecteur : 201 Created
+                            note right of C : 201 et non 200 : la requête crée une\nressource. Le front distingue les deux.
+                        end
+                    end
+                end
+            end
+        end
+
+    end
+
+    deactivate S
+end
+
+deactivate C
+
+@enduml

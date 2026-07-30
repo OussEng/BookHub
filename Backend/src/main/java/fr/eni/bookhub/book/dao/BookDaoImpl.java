@@ -1,6 +1,5 @@
 package fr.eni.bookhub.book.dao;
 
-import aj.org.objectweb.asm.commons.Remapper;
 import fr.eni.bookhub.book.entity.Book;
 import fr.eni.bookhub.book.repository.BookRepository;
 import lombok.AllArgsConstructor;
@@ -35,5 +34,15 @@ public class BookDaoImpl implements IBookDao {
     @Override
     public Page<Book> searchBooks(String search, Long genreId, Pageable pageable) {
         return bookRepository.searchBooks(search, genreId,pageable);
+    }
+
+    @Override
+    public List<Book> findAll() {
+        return bookRepository.findAll();
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return bookRepository.existsById(id);
     }
 }
