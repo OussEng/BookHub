@@ -1,4 +1,4 @@
-package fr.eni.bookhub.review.service;
+package fr.eni.bookhub.unit.review;
 
 import fr.eni.bookhub.book.dao.IBookDao;
 import fr.eni.bookhub.book.entity.Book;
@@ -11,6 +11,7 @@ import fr.eni.bookhub.review.dto.request.ReviewRequest;
 import fr.eni.bookhub.review.dto.response.ReviewResponse;
 import fr.eni.bookhub.review.entity.Review;
 import fr.eni.bookhub.review.entity.ReviewStatus;
+import fr.eni.bookhub.review.service.ReviewService;
 import fr.eni.bookhub.security.AuthenticatedUserProvider;
 import fr.eni.bookhub.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
