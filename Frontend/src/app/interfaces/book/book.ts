@@ -1,9 +1,14 @@
-export interface Book {
+import { BookCopy } from "../book-copy/book-copy";
 
+export interface Book {
   id: number;
   title: string;
-  img: string;
   author: string[];
-  available: boolean;
-
+  isbn: string;
+  img: string;
+  available : boolean;
+  
+genres?: string[]; 
+  
+copies?: BookCopy[]; 
 }
