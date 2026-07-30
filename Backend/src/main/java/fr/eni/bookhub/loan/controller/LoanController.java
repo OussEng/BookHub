@@ -3,6 +3,7 @@ package fr.eni.bookhub.loan.controller;
 import fr.eni.bookhub.loan.dto.response.LoanDTO;
 import fr.eni.bookhub.loan.service.LoanService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class LoanController {
     @PostMapping("/{id}/borrow")
     public ResponseEntity<Void> createLoan(@PathVariable Long id) {
         loanService.createLoan(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")

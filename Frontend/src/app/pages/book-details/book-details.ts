@@ -18,7 +18,7 @@ export class BookDetails implements OnInit {
     defaultCoverUrl = 'assets/images/default.png';
     private flashService = inject(FlashMessageService);
 
-    id = input.required<string>();
+  id = input.required<string>();
 
     book: any = null;
     loans: any = [];
