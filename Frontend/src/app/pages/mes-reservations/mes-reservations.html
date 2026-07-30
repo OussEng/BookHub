@@ -1,0 +1,90 @@
+<section class="mes-reservations">
+
+    <h1>Mes réservations</h1>
+
+    @if (isLoading()) {
+        <p class="info">Chargement…</p>
+    } @else if (errorMessage) {
+        <p class="erreur">{{ errorMessage }}</p>
+    } @else if (reservations.length === 0) {
+        <p class="info">
+            Vous n'avez aucune réservation.
+            <a routerLink="/">Parcourir le catalogue</a>
+        </p>
+    } @else {
+
+        <table class="table-reservations">
+            <thead>
+            <tr>
+                <th>Livre</th>
+                <th>Date</th>
+                <th>Rang</th>
+                <th>Statut</th>
+                <th>Temps restant</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+                @for (reservation of reservations; track reservation.id) {
+                    <tr>
+                        <td>
+                            <a [routerLink]="['/book', reservation.bookId]">
+                                Livre n° {{ reservation.bookId }}
+                            </a>
+                        </td>
+
+                        <td>{{ reservation.reservesDate | date:'dd/MM/yyyy HH:mm' }}</td>
+
+                        <td>
+                            @if (rangAffichable(reservation.status)) {
+                                {{ reservation.rank }}
+                            } @else {
+                                —
+                            }
+                        </td>
+
+                        <td>
+                            <span [class]="classeStatut(reservation.status)">
+                                {{ libelleStatut(reservation.status) }}
+                            </span>
+                        </td>
+
+                        <td>
+                            @if (decompteAffichable(reservation)) {
+                                <span class="decompte"
+                                      [class.decompte--urgent]="decompteUrgent(reservation)">
+                                    {{ tempsRestant(reservation) }}
+                                </span>
+                                <span class="echeance-absolue">
+                                    {{ reservation.pickupDeadline | date:'dd/MM HH:mm' }}
+                                </span>
+                            } @else if (reservation.pickupDeadline) {
+                                {{ reservation.pickupDeadline | date:'dd/MM/yyyy HH:mm' }}
+                            } @else {
+                                —
+                            }
+                        </td>
+                        <td class="colonne-action">
+                            @if (annulable(reservation.status)) {
+                                <button type="button"
+                                        class="bouton-annuler"
+                                        [disabled]="enCoursAnnulation() === reservation.id"
+                                        (click)="annuler(reservation)">
+                                    Annuler
+                                </button>
+                            }
+                        </td>
+                    </tr>
+
+                    @if (consigne(reservation)) {
+                        <tr class="ligne-consigne">
+                            <td colspan="6">{{ consigne(reservation) }}</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+    }
+
+</section>
