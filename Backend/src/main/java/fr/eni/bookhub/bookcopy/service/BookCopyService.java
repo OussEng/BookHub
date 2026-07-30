@@ -2,25 +2,19 @@ package fr.eni.bookhub.bookcopy.service;
 
 
 import fr.eni.bookhub.book.dao.IBookDao;
-import fr.eni.bookhub.book.dto.response.BookResponse;
 import fr.eni.bookhub.book.entity.Book;
-import fr.eni.bookhub.book.repository.BookRepository;
 import fr.eni.bookhub.bookcopy.dao.IBookCopyDao;
 import fr.eni.bookhub.bookcopy.dto.request.CreateBookCopyRequest;
 import fr.eni.bookhub.bookcopy.dto.response.BookCopyResponse;
 import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.entity.Condition;
-import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
 import fr.eni.bookhub.exception.custom.ConflictException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.EnumSet;
-import java.util.List;
-import org.springframework.stereotype.Service;
-
 
 
 @Service
