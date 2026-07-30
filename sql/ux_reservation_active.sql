@@ -13,5 +13,5 @@ GO
 
 CREATE UNIQUE INDEX ux_reservation_active
     ON reservation (users_id, book_id)
-    WHERE reservation_status IN ('PENDING', 'AVAILABLE');
+    WHERE reservation_status IN ('PENDING', 'READY_FOR_PICKUP');
 GO
