@@ -37,7 +37,6 @@ public class BookDaoImpl implements IBookDao {
     }
 
     @Override
-
     public boolean existsById(Long id) {
         return bookRepository.existsById(id);
     }
@@ -48,9 +47,5 @@ public class BookDaoImpl implements IBookDao {
 
     public List<Book> findAll() {
         return bookRepository.findAll();
-    }
-
-
-
     }
 }
