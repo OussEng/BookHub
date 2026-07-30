@@ -19,8 +19,8 @@
 -- il porte sur (users_id, book_id), l'ordre des colonnes ne convient pas.
 --
 -- Pas d'index filtré ici, contrairement à ux_reservation_active :
--- la procédure interroge PENDING, la tâche planifiée interroge AVAILABLE.
--- Un filtre sur un seul statut n'en servirait qu'une des deux.
+-- la promotion interroge PENDING, la tâche planifiée interroge
+-- READY_FOR_PICKUP. Un filtre sur un seul statut n'en servirait qu'une.
 --
 -- À exécuter APRÈS le premier démarrage : la table vient d'Hibernate.
 -- ddl-auto=update ne recrée pas les index : si la base est refaite,
