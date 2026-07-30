@@ -4,11 +4,16 @@ import fr.eni.bookhub.bookcopy.dao.IBookCopyDao;
 import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.service.BookCopyService;
+import fr.eni.bookhub.exception.custom.ConflictException;
 import fr.eni.bookhub.exception.custom.LoanException;
+import fr.eni.bookhub.exception.custom.ResourceNotFoundException;
 import fr.eni.bookhub.loan.dao.ILoanDao;
 import fr.eni.bookhub.loan.dto.response.LoanDTO;
 import fr.eni.bookhub.loan.entity.Loan;
 import fr.eni.bookhub.loan.entity.LoanStatus;
+import fr.eni.bookhub.reservation.dao.IReservationDao;
+import fr.eni.bookhub.reservation.entity.Reservation;
+import fr.eni.bookhub.reservation.entity.ReservationStatus;
 import fr.eni.bookhub.reservation.service.ReservationService;
 import fr.eni.bookhub.security.AuthenticatedUserProvider;
 import fr.eni.bookhub.user.entity.User;
@@ -17,7 +22,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -28,7 +36,6 @@ public class LoanService {
     private final BookCopyService bookCopyService;
     private final IBookCopyDao bookCopyRepository;
     private final ReservationService reservationService;
-
 
 // --- CRUD ---
 
@@ -72,29 +79,15 @@ public class LoanService {
 
     }
 
-    /*
-    Method in charge to make a new loan if the book searched isn't loan.
-    @id : id of the book copy you want to loan.
-     */
     public void createLoan(Long bookId) {
         User currentUser = authenticatedUserProvider.getCurrentUser();
-        List<BookCopy> bookCopyFoundList = bookCopyRepository.findByBookIdAndBookStatus(bookId, BookStatus.AVAILABLE);
-        int listSize = bookCopyFoundList.size();
-        System.out.println(bookCopyFoundList);
-
-        if (listSize == 0) {
-            throw new LoanException("Book copy not available");
-        }
-
-        BookCopy bookCopy = bookCopyFoundList.get(listSize - 1);
-
-        if (!bookCopyService.canBeLoaned(bookCopy)) {
-            throw new LoanException("Book already loaned");
-        }
 
         if (loanRepository.countByLoanerIdAndStatus(currentUser.getId(), LoanStatus.ACTIVE) >= 5) {
-            throw new LoanException("Maximum books limit reached");
+            throw new LoanException("Limite maximum de 5 livres atteinte");
         }
+
+        BookCopy bookCopy = reservationService.fulfillIfReady(currentUser, bookId)
+                .orElseGet(() -> findAvailableCopy(bookId));
 
         bookCopy.setBookStatus(BookStatus.LOANED);
         bookCopyRepository.save(bookCopy);
@@ -103,43 +96,51 @@ public class LoanService {
                 .loaner(currentUser)
                 .bookCopyLoaned(bookCopy)
                 .loanDate(LocalDate.now())
+                .dueDate(LocalDate.now().plusDays(14))
                 .status(LoanStatus.ACTIVE)
                 .build();
         loanRepository.save(newLoan);
     }
 
-    /*
-    Method in charge to declare to return a loan when the book return to the library.
-    @id : id of the loan you want to close.
-     */
-    @Transactional
-    public void returnLoan(Long loanId) {
-        Loan loanFound = this.getLoanEntityById(loanId);
+    private BookCopy findAvailableCopy(Long bookId) {
+        List<BookCopy> bookCopyFoundList = bookCopyRepository.findByBookIdAndBookStatus(bookId, BookStatus.AVAILABLE);
 
-        if (loanFound == null) {
-            throw new LoanException("Loan not found");
+        if (bookCopyFoundList.isEmpty()) {
+            throw new LoanException("Aucun exemplaire disponible pour ce livre");
         }
 
-        if (loanFound.getStatus().equals(LoanStatus.RETURN) || loanFound.getReturnDate() != null) {
-            throw new LoanException("Loan already returned");
+        return bookCopyFoundList.stream()
+                .filter(bookCopyService::canBeLoaned)
+                .findFirst()
+                .orElseThrow(() -> new LoanException("Aucun exemplaire disponible dans un état correct"));
+    }
+
+    @Transactional
+    public void returnLoan(Long loanId) {
+        Loan loanFound = loanRepository.findById(loanId)
+                .orElseThrow(() -> new ResourceNotFoundException("Emprunt introuvable"));
+
+        if (loanFound.getStatus() == LoanStatus.RETURNED) {
+            throw new ConflictException("Retour déjà enregistré");
         }
 
         if (this.IsLoanReturnDelayed(loanFound)) {
             loanFound.setDueDate(LocalDate.now());
         }
 
-        loanFound.setReturnDate(LocalDate.now());
-        loanFound.setStatus(LoanStatus.RETURN);
-        loanRepository.save(loanFound);
-
         BookCopy bookCopy = loanFound.getBookCopyLoaned();
+        bookCopy.setBookStatus(BookStatus.AVAILABLE);
+        bookCopyRepository.saveAndFlush(bookCopy);
+
+        loanFound.setReturnDate(LocalDate.now());
+        loanFound.setStatus(LoanStatus.RETURNED);
+        loanRepository.save(loanFound);
 
         reservationService.promote(
                 bookCopy.getBook().getId(),
                 bookCopy.getId(),
-                BookStatus.LOANED
+                BookStatus.AVAILABLE
         );
-
     }
 
 // --- Utils ---

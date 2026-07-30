@@ -7,7 +7,9 @@ import fr.eni.bookhub.user.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 // Délégation pure vers Spring Data : aucune règle métier ici, elle vit dans le service
@@ -15,28 +17,23 @@ import java.util.Optional;
 @AllArgsConstructor
 public class ReservationDaoImpl implements IReservationDao {
 
-    // Seul point d'accès à la base : le service ne connaît que l'interface
     private final ReservationRepository reservationRepository;
 
-    // INSERT puis relecture de l'id généré par IDENTITY
     @Override
     public Reservation save(Reservation reservation) {
         return reservationRepository.save(reservation);
     }
 
-    // SELECT COUNT(*) ... WHERE users_id = ? AND reservation_status IN (?)
     @Override
     public long countByUserAndStatusIn(User user, Collection<ReservationStatus> statuts) {
         return reservationRepository.countByUserAndStatusIn(user, statuts);
     }
 
-    // SELECT ... TOP 1 : s'arrête dès la première ligne trouvée, pas de comptage
     @Override
     public boolean existsByUserAndBookIdAndStatusIn(User user, Long bookId, Collection<ReservationStatus> statuts) {
         return reservationRepository.existsByUserAndBookIdAndStatusIn(user, bookId, statuts);
     }
 
-    // SELECT COUNT(*) ... WHERE book_id = ? AND reservation_status IN (?)
     @Override
     public long countByBookIdAndStatusIn(Long bookId, Collection<ReservationStatus> statuts) {
         return reservationRepository.countByBookIdAndStatusIn(bookId, statuts);
@@ -50,5 +47,20 @@ public class ReservationDaoImpl implements IReservationDao {
     @Override
     public boolean existsByBookCopyIdAndStatus(Long bookCopyId, ReservationStatus reservationStatus) {
         return reservationRepository.existsByBookCopyIdAndStatus(bookCopyId, reservationStatus);
+    }
+
+    @Override
+    public Optional<Reservation> findByUserAndBookIdAndStatus(User user, Long bookId, ReservationStatus status) {
+        return reservationRepository.findByUserAndBookIdAndStatus(user, bookId, status);
+    }
+
+    @Override
+    public Optional<Reservation> findById(Long reservationId) {
+        return reservationRepository.findById(reservationId);
+    }
+
+    @Override
+    public List<Reservation> findByStatusAndPickupDeadlineBefore(ReservationStatus status, LocalDateTime deadline) {
+        return reservationRepository.findByStatusAndPickupDeadlineBefore(status, deadline);
     }
 }

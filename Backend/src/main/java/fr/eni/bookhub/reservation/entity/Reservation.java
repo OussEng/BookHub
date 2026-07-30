@@ -36,22 +36,14 @@ public class Reservation {
     @JoinColumn(name = "users_id", nullable = false)
     private User user;
 
-    // TODO remplacer par @ManyToOne Book quand l'entité sera disponible
      @ManyToOne(fetch = FetchType.LAZY, optional = false)
      @JoinColumn(name = "book_id", nullable = false)
      private Book book;
-//    @Column(name = "book_id", nullable = false) // supprimer
-//    private Long bookId; // supprimer
 
-
-    // TODO remplacer par @ManyToOne BookCopy quand l'entité sera disponible
      @ManyToOne(fetch = FetchType.LAZY)
      @JoinColumn(name = "book_copy_id")
      private BookCopy bookCopy;
-//    @Column(name = "book_copy_id") // supprimer
-//    private Long bookCopyId; // supprimer
 
-    // Renseignés au passage PENDING -> AVAILABLE, par le déclencheur SQL
     @Column(name = "notified_at")
     private LocalDateTime notifiedAt;
 

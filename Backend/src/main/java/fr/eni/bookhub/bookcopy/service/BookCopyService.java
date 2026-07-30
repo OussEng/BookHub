@@ -26,7 +26,7 @@ public class BookCopyService {
         this.bookRepository = bookRepository;
     }
 
-    private boolean goodCondition(BookCopy copy) {
+    public boolean goodCondition(BookCopy copy) {
         return copy.getCondition() == Condition.NEW
                 || copy.getCondition() == Condition.GOOD;
     }

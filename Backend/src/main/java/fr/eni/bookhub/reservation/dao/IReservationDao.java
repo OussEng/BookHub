@@ -4,7 +4,9 @@ import fr.eni.bookhub.reservation.entity.Reservation;
 import fr.eni.bookhub.reservation.entity.ReservationStatus;
 import fr.eni.bookhub.user.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface IReservationDao {
@@ -26,4 +28,10 @@ public interface IReservationDao {
             ReservationStatus status);
 
     boolean existsByBookCopyIdAndStatus(Long bookCopyId, ReservationStatus reservationStatus);
+
+    Optional<Reservation> findByUserAndBookIdAndStatus(User user, Long bookId, ReservationStatus status);
+
+    Optional<Reservation> findById(Long reservationId);
+
+    List<Reservation> findByStatusAndPickupDeadlineBefore(ReservationStatus status, LocalDateTime deadline);
 }
