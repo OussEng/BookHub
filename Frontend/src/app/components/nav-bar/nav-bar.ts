@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 
@@ -13,6 +13,8 @@ export class NavBar {
 
   isMobileMenuOpen = signal(false);
   isGestionDropdownOpen = signal(false);
+
+  private elementRef = inject(ElementRef);
 
 
   constructor(
@@ -29,9 +31,25 @@ export class NavBar {
     this.isMobileMenuOpen.set(false);
   }
 
-  toggleGestionDropdown(): void {
-    this.isGestionDropdownOpen.update(value => !value);
+  
+
+  toggleGestionDropdown() {
+  this.isGestionDropdownOpen.set(!this.isGestionDropdownOpen());
   }
+
+  closeGestionDropdown() {
+  this.isGestionDropdownOpen.set(false);
+  } 
+
+  @HostListener('document:click', ['$event'])
+    onDocumentClick(event: MouseEvent) {
+    if (!this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.closeGestionDropdown();
+    }
+
+  }
+
+
 
   closeGestionDropdownWithDelay(): void {
     setTimeout(() => {
