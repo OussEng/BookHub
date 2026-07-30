@@ -46,7 +46,7 @@ public class ReviewService {
         }
 
         if (!loanDao.existsByLoanerIdAndBookCopyLoanedBookIdAndStatus(currentUser.getId(), bookId, LoanStatus.RETURNED)) {
-            throw new AccessDeniedException("Vous ne pouvez pas noter cette ouvrage");
+            throw new AccessDeniedException("Vous ne pouvez pas noter cette ouvrage car vous ne l'avez pas encore emprunté");
         }
 
         Review review = Review.builder()
@@ -129,8 +129,11 @@ public class ReviewService {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
-    public Page<AdminReviewResponse> getAllReviews(Pageable pageable) {
-        Page<Review> reviews = reviewDao.findAll(pageable);
+    public Page<AdminReviewResponse> getAllReviews(String search, Pageable pageable) {
+        Page<Review> reviews = (search == null || search.isBlank())
+                ? reviewDao.findAll(pageable)
+                : reviewDao.searchByBookOrAuthor(search.trim(), pageable);
+
         return reviews.map(AdminReviewResponse::fromEntity);
     }
 

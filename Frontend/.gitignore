@@ -54,6 +54,9 @@ tmp/
 app/**/*.js
 app/**/*.js.map
 
+# Environnement Angular (fichier local, à créer depuis environment.example.ts)
+src/environments/environment.ts
+
 # dependencies
 node_modules/
 bower_components/
@@ -98,3 +101,4 @@ e2e/*.map
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/angular,visualstudiocode
+

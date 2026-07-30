@@ -1,4 +1,4 @@
-package fr.eni.bookhub.review.service;
+package fr.eni.bookhub.unit.review;
 
 import fr.eni.bookhub.book.dao.IBookDao;
 import fr.eni.bookhub.book.entity.Book;
@@ -11,6 +11,7 @@ import fr.eni.bookhub.review.dto.request.ReviewRequest;
 import fr.eni.bookhub.review.dto.response.ReviewResponse;
 import fr.eni.bookhub.review.entity.Review;
 import fr.eni.bookhub.review.entity.ReviewStatus;
+import fr.eni.bookhub.review.service.ReviewService;
 import fr.eni.bookhub.security.AuthenticatedUserProvider;
 import fr.eni.bookhub.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,9 +48,7 @@ public class ReviewServiceTest {
 
     private User user;
     private Book book;
-    private Review review;
     private ReviewRequest request;
-    private ReviewResponse response;
 
     @BeforeEach
     void init() {
@@ -63,18 +61,6 @@ public class ReviewServiceTest {
                 .id(1L)
                 .build();
         request = new ReviewRequest(4, "New comment");
-        review = Review.builder()
-                .id(1L)
-                .rating(4)
-                .comment("New comment")
-                .status(ReviewStatus.ACTIVE)
-                .user(user)
-                .book(book)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(null)
-                .moderatedAt(null)
-                .build();
-        response = ReviewResponse.fromEntity(review);
     }
 
     @Test
@@ -130,7 +116,7 @@ public class ReviewServiceTest {
                 () -> reviewService.createReview(1L, request));
 
         // THEN
-        assertEquals("Vous ne pouvez pas noter cette ouvrage", ex.getMessage());
+        assertEquals("Vous ne pouvez pas noter cette ouvrage car vous ne l'avez pas encore emprunté", ex.getMessage());
         verify(authenticatedUserProvider).getCurrentUser();
         verify(bookDao).findById(1L);
         verify(reviewDao).existsByUserIdAndBookId(1L, 1L);

@@ -2,6 +2,7 @@ spring.datasource.url=jdbc:sqlserver://;serverName=localhost;databaseName=BookHu
 spring.datasource.username=
 spring.datasource.password=
 
+server.port=8080
 
 app.upload.dir=./uploads/books
 app.base-url=http://localhost:8080

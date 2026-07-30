@@ -1,17 +1,17 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { Book } from '../../../interfaces/book/book';
+import {AdminReviewResponse} from "../../../interfaces/review/response/admin-review-response";
 
 @Component({
-  selector: 'app-book-delete-modal',
+  selector: 'app-review-delete-modal',
   standalone: true,
   imports: [CommonModule, MatDialogModule],
-  templateUrl: './book-delete-modal.html'
+  templateUrl: './review-delete-modal.html'
 })
-export class BookDeleteModal {
-  private dialogRef = inject(MatDialogRef<BookDeleteModal>);
-  public data: { book: Book } = inject(MAT_DIALOG_DATA);
+export class ReviewDeleteModal {
+  private dialogRef = inject(MatDialogRef<ReviewDeleteModal>);
+  public data: { review: AdminReviewResponse } = inject(MAT_DIALOG_DATA);
 
   onCancel(): void {
     this.dialogRef.close(false);

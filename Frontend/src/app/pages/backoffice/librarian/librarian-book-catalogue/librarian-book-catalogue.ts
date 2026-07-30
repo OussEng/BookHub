@@ -1,21 +1,20 @@
-import { Component, inject, signal } from '@angular/core';
-import { BookService } from '../../../../services/book-service/book.service';
+import {Component, inject, signal} from '@angular/core';
+import {BookService} from '../../../../services/book-service/book.service';
 
 // import { AuthorService } from '../../../../services/author-service/author.service';
 // import { GenreService } from '../../../../services/genre-service/genre.service';
-
-import { Book } from '../../../../interfaces/book/Book';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { BookCreateModal } from '../../../../components/modals/book-create-modal/book-create-modal';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { Author } from '../../../../interfaces/author/author';
-import { Genre } from '../../../../interfaces/genre/genre';
-import { AuthorService } from '../../../../services/author-service/author.service';
-import { GenreService } from '../../../../services/genre-service/genre.service';
-import { FlashMessageService } from '../../../../services/flash-message-service/flash-message-service';
-import { BookUpdateModal } from '../../../../components/modals/book-update-modal/book-update-modal';
-import { BookDeleteModal } from '../../../../components/modals/book-delete-modal/book-delete-modal';
+import {Book} from '../../../../interfaces/book/book';
+import {CommonModule} from '@angular/common';
+import {RouterLink} from '@angular/router';
+import {BookCreateModal} from '../../../../components/modals/book-create-modal/book-create-modal';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {Author} from '../../../../interfaces/author/author';
+import {Genre} from '../../../../interfaces/genre/genre';
+import {AuthorService} from '../../../../services/author-service/author.service';
+import {GenreService} from '../../../../services/genre-service/genre.service';
+import {FlashMessageService} from '../../../../services/flash-message-service/flash-message-service';
+import {BookUpdateModal} from '../../../../components/modals/book-update-modal/book-update-modal';
+import {BookDeleteModal} from '../../../../components/modals/book-delete-modal/book-delete-modal';
 
 @Component({
   selector: 'app-librarian-book-catalogue',
