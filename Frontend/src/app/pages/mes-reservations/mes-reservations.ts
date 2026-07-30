@@ -61,13 +61,13 @@ export class MesReservations implements OnInit, OnDestroy {
     // Seule une réservation encore dans la file peut être annulée.
     // Les états finaux — empruntée, annulée, expirée — n'offrent rien à annuler.
     annulable(statut: ReservationStatus): boolean {
-        return statut === 'PENDING' || statut === 'AVAILABLE';
+        return statut === 'PENDING' || statut === 'READY_FOR_PICKUP';
     }
 
     annuler(reservation: ReservationResponse) {
         // Geste irréversible : une réservation annulée ne revient pas dans
         // la file, il faudrait en créer une nouvelle.
-        const message = reservation.status === 'AVAILABLE'
+        const message = reservation.status === 'READY_FOR_PICKUP'
             ? "L'exemplaire est mis de côté pour vous. En annulant, il passe au lecteur suivant. Confirmer ?"
             : "Annuler cette réservation ? Vous perdrez votre place dans la file.";
 
@@ -97,7 +97,7 @@ export class MesReservations implements OnInit, OnDestroy {
     libelleStatut(statut: ReservationStatus): string {
         switch (statut) {
             case 'PENDING':   return "En attente";
-            case 'AVAILABLE': return "Disponible";
+            case 'READY_FOR_PICKUP': return "Disponible";
             case 'FULFILLED': return "Empruntée";
             case 'CANCELLED': return "Annulée";
             case 'EXPIRED':   return "Expirée";
@@ -108,7 +108,7 @@ export class MesReservations implements OnInit, OnDestroy {
     // Deux messages seulement, et ils ne disent pas la même chose :
     // AVAILABLE presse le lecteur, FULFILLED le rassure.
     consigne(reservation: ReservationResponse): string {
-        if (reservation.status === 'AVAILABLE') {
+        if (reservation.status === 'READY_FOR_PICKUP') {
             return "Cliquez sur Prendre avant l'échéance, sinon l'exemplaire passe au suivant.";
         }
         if (reservation.status === 'FULFILLED') {
@@ -120,7 +120,7 @@ export class MesReservations implements OnInit, OnDestroy {
     // Le rang n'a de sens que dans la file : une réservation empruntée,
     // annulée ou expirée n'y est plus.
     rangAffichable(statut: ReservationStatus): boolean {
-        return statut === 'PENDING' || statut === 'AVAILABLE';
+        return statut === 'PENDING' || statut === 'READY_FOR_PICKUP';
     }
 
     // Classe CSS par statut, pour la pastille de couleur
@@ -130,7 +130,7 @@ export class MesReservations implements OnInit, OnDestroy {
 
     // Le décompte n'a de sens que pendant les 72h, donc au statut AVAILABLE.
     decompteAffichable(reservation: ReservationResponse): boolean {
-        return reservation.status === 'AVAILABLE' && !!reservation.pickupDeadline;
+        return reservation.status === 'READY_FOR_PICKUP' && !!reservation.pickupDeadline;
     }
 
     // pickupDeadline arrive en UTC. new Date() lit la chaîne ISO et
