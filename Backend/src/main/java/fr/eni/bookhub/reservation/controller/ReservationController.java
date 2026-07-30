@@ -33,7 +33,7 @@ public class ReservationController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/me")
+    @GetMapping("/my")
     public ResponseEntity<List<ReservationResponse>> getMyReservations () {
         return ResponseEntity.ok(reservationService.getMyReservations());
     }
