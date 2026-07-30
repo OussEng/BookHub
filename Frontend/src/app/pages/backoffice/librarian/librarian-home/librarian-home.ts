@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { Book } from '../../../../interfaces/book/Book';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-librarian-home',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './librarian-home.html',
   styleUrl: './librarian-home.css',
 })
