@@ -52,7 +52,12 @@ export class BookService {
 
   createBookWithImage(formData: FormData): Observable<Book> {
   return this.http.post<Book>(this.apiUrl, formData);
-}
+  }
+
+
+  updateBookWithImage(id: number, formData: FormData): Observable<Book> {
+    return this.http.put<Book>(`${this.apiUrl}/${id}`, formData);
+  }
 
 
 }

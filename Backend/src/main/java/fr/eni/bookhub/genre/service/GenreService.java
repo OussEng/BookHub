@@ -20,6 +20,11 @@ public class GenreService {
         return genres.stream().map(GenreResponse::fromEntity).toList();
     }
 
+    public List<GenreResponse> getAllGenresById(List<Long> id){
+        List<Genre> genres = this.genreDao.findAllById(id);
+        return genres.stream().map(GenreResponse::fromEntity).toList();
+    }
+
 
 
 }
