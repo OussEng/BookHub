@@ -2,10 +2,12 @@ import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BookService } from '../../services/book-service/book.service';
-import {LoansService} from "../../services/loans.service";
+import { LoansService } from "../../services/loans.service";
+import { BookActionResponse } from "../../interfaces/reservation/response/book-action.model";
 
-import {BookReviews} from "../book-reviews/book-reviews";
-import {FlashMessageService} from "../../services/flash-message-service/flash-message-service";
+import { BookReviews } from "../book-reviews/book-reviews";
+import { FlashMessageService } from "../../services/flash-message-service/flash-message-service";
+import {ReservationService} from "../../services/reservation.service";
 
 @Component({
     selector: 'app-book-details',
@@ -13,27 +15,28 @@ import {FlashMessageService} from "../../services/flash-message-service/flash-me
     imports: [CommonModule, RouterLink, BookReviews],
     templateUrl: './book-details.html',
     styleUrl: './book-details.css',
-
 })
 export class BookDetails implements OnInit {
     private bookService = inject(BookService);
     private loanService = inject(LoansService);
-    defaultCoverUrl = 'assets/images/default.png';
+    private reservationService = inject(ReservationService);
     private flashService = inject(FlashMessageService);
 
-  id = input.required<string>();
+    defaultCoverUrl = 'assets/images/default.png';
+
+    id = input.required<string>();
 
     book: any = null;
-    loans: any = [];
     protected isLoading = signal<boolean>(true);
-    protected isLoaned= signal<boolean>(false);
+    protected isActionLoading = signal<boolean>(false);
+    protected bookAction = signal<BookActionResponse | null>(null);
     errorMessage = '';
 
     ngOnInit() {
         const bookId = Number(this.id());
 
         this.loadBooks(bookId);
-        this.loadLoans();
+        this.loadAction(bookId);
     }
 
     loadBooks(bookId: number) {
@@ -49,41 +52,88 @@ export class BookDetails implements OnInit {
         });
     }
 
-    loadLoans() {
-        this.loanService.getMyLoans().subscribe({
+    loadAction(bookId: number) {
+        this.reservationService.getAvailableAction(bookId).subscribe({
             next: (data) => {
-                this.loans = data;
-                this.loanService.isBookAlreadyLoanedByUser(this.loans, this.book).subscribe({
-                    next: (isLoaned) => {
-                        this.isLoaned.set(isLoaned);
-                    }
-                })
+                this.bookAction.set(data);
+            },
+            error: (err) => {
+                console.error('Erreur lors du chargement du statut du livre', err);
             }
-        })
+        });
     }
 
-    /*
-    Method in charge to loan a book_copy by the book id loaded in the page detail.
-     */
-    loanBookCopyByBookDetails(){
-        this.isLoading.set(true);
+    handleAction() {
+        const action = this.bookAction();
+        if (!action) return;
 
-        if (this.book.available) {
-            const bookId = this.book.id;
-            this.loanService.newLoan(bookId).subscribe({
-                next: (data) => {
-                    this.loadBooks(bookId);
-                    this.loadLoans();
-                    this.flashService.success("Votre location a bien été enregistrée")
-                    this.isLoading.set(false)
-                },
-                error: (err) => {
-                    this.isLoading.set(false)
-                    this.errorMessage = "Impossible d'emprunter ce livre";
-                    this.flashService.error("Impossible d'emprunter ce livre");
+        const bookId = Number(this.id());
+
+        switch (action.action) {
+            case 'LOAN':
+                this.loan(bookId);
+                break;
+            case 'RESERVE':
+                this.reserve(bookId);
+                break;
+            case 'CANCEL':
+                if (action.reservationId) {
+                    this.cancel(action.reservationId, bookId);
                 }
-            });
+                break;
+            case 'PICKUP':
+                this.loan(bookId);
+                break;
         }
+    }
+
+    private loan(bookId: number) {
+        this.isActionLoading.set(true);
+
+        this.loanService.newLoan(bookId).subscribe({
+            next: () => {
+                this.loadBooks(bookId);
+                this.loadAction(bookId);
+                this.flashService.success("Votre location a bien été enregistrée");
+                this.isActionLoading.set(false);
+            },
+            error: (err) => {
+                this.isActionLoading.set(false);
+                this.flashService.error("Impossible d'emprunter ce livre");
+            }
+        });
+    }
+
+    private reserve(bookId: number) {
+        this.isActionLoading.set(true);
+
+        this.reservationService.reserver(bookId).subscribe({
+            next: () => {
+                this.loadAction(bookId);
+                this.flashService.success("Votre réservation a bien été enregistrée");
+                this.isActionLoading.set(false);
+            },
+            error: (err) => {
+                this.isActionLoading.set(false);
+                this.flashService.error("Impossible de réserver ce livre");
+            }
+        });
+    }
+
+    private cancel(reservationId: number, bookId: number) {
+        this.isActionLoading.set(true);
+
+        this.reservationService.annuler(reservationId).subscribe({
+            next: () => {
+                this.loadAction(bookId);
+                this.flashService.success("Votre réservation a été annulée");
+                this.isActionLoading.set(false);
+            },
+            error: (err) => {
+                this.isActionLoading.set(false);
+                this.flashService.error("Impossible d'annuler la réservation");
+            }
+        });
     }
 
     handleImageError(event: Event): void {

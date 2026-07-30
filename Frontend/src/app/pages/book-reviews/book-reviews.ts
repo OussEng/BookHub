@@ -2,7 +2,7 @@ import {Component, inject, input, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
-import {ReviewResponse} from "../../interfaces/review/response/ReviewResponse";
+import {ReviewResponseModel} from "../../interfaces/review/response/review-response.model";
 import {ReviewService} from "../../services/review-service/review.service";
 
 @Component({
@@ -18,7 +18,7 @@ export class BookReviews implements OnInit {
 
   bookId = input.required<number>();
 
-  reviews = signal<ReviewResponse[]>([]);
+  reviews = signal<ReviewResponseModel[]>([]);
   currentPage = signal(0);
   totalPages = signal(0);
   isLoading = signal(true);
@@ -72,7 +72,7 @@ export class BookReviews implements OnInit {
     });
   }
 
-  startEdit(review: ReviewResponse) {
+  startEdit(review: ReviewResponseModel) {
     this.editingReviewId.set(review.id);
     this.editRating.set(review.rating);
     this.editComment.set(review.comment ?? '');
@@ -108,7 +108,7 @@ export class BookReviews implements OnInit {
 
   currentUserId = this.authService.getCurrentUser()?.id ?? null;
 
-  isOwnReview(review: ReviewResponse): boolean {
+  isOwnReview(review: ReviewResponseModel): boolean {
     return this.currentUserId !== null && this.currentUserId === review.userId;
   }
 }

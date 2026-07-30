@@ -1,27 +1,25 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
-import { Author } from "../../interfaces/author/author";
+import {HttpClient} from "@angular/common/http";
+import {Injectable} from "@angular/core";
+import {Observable} from "rxjs";
+import {Author} from "../../interfaces/author/author";
+import {environment} from "../../../environments/environment";
 
 
-
-
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class AuthorService {
 
 
+    private readonly apiUrl = `${environment.apiUrl}/author`;
 
-private readonly apiUrl = 'http://localhost:8080/api/author';
-  
 
-  constructor(private http: HttpClient) {
+    constructor(private http: HttpClient) {
 
-  }
+    }
 
 
     getAuthors(): Observable<Author[]> {
-    return this.http.get<Author[]>(this.apiUrl + '/all');
-  }
-  
-    
+        return this.http.get<Author[]>(this.apiUrl + '/all');
+    }
+
+
 }

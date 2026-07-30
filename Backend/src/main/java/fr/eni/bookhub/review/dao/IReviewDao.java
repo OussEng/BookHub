@@ -3,6 +3,7 @@ package fr.eni.bookhub.review.dao;
 import fr.eni.bookhub.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -19,6 +20,8 @@ public interface IReviewDao {
     Page<Review> findAll(Pageable pageable);
 
     void delete(Review review);
+
+    Page<Review> searchByBookOrAuthor(String search, Pageable pageable);
 }
 
 

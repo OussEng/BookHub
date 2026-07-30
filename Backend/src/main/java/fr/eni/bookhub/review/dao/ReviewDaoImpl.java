@@ -44,4 +44,9 @@ public class ReviewDaoImpl implements IReviewDao {
     public void delete(Review review) {
         reviewRepository.delete(review);
     }
+
+    @Override
+    public Page<Review> searchByBookOrAuthor(String search, Pageable pageable) {
+        return reviewRepository.searchByBookOrAuthor(search, pageable);
+    }
 }

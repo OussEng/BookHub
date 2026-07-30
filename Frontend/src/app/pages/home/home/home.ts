@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { BookService } from '../../../services/book-service/book.service';
-import { Book } from '../../../interfaces/book/Book';
+import { Book } from '../../../interfaces/book/book';
 import { RouterLink } from '@angular/router';
 
 @Component({

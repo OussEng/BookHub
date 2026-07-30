@@ -65,6 +65,11 @@ export class NavBar {
     return this.authservice.isLibrarian()
   }
 
+  isAdmin() {
+    return this.authservice.isAdmin()
+  }
+
+
   logout(){
     this.authservice.logout()
     this.router.navigate(['/login']);

@@ -1,4 +1,4 @@
-export interface ReviewRequest {
+export interface ReviewRequestModel {
     rating: number;
     comment?: string | null;
 }

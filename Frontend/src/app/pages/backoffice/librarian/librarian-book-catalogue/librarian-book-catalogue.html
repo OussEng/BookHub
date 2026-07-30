@@ -1,137 +1,135 @@
 <div class="p-6 md:p-10 bg-[#FBF7E7] min-h-screen font-sans text-slate-900">
-  
-  <header class="mb-10 text-center">
-    <h1 class="font-serif text-5xl font-normal text-slate-950 tracking-tight">Gestion des ouvrages</h1>
-  </header>
 
-  <section class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-10">
-  <div class="grid grid-cols-1 lg:grid-cols-[auto,1fr,auto] gap-6 items-center">
-    
-    <button 
-      (click)="openNewBookModal()" 
-      class="bg-[#585942] text-white h-24 w-48 rounded-3xl flex items-center justify-center text-xl font-light tracking-wide hover:opacity-90 transition duration-150 shadow-md justify-self-center">
-      Nouvel ouvrage
-    </button>
+    <header class="mb-10 text-center">
+        <h1 class="font-serif text-5xl font-normal text-slate-950 tracking-tight">Gestion des ouvrages</h1>
+    </header>
 
-    <div class="bg-slate-50 p-6 rounded-3xl border border-gray-100 w-full">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <input 
-          #searchInputRef
-          type="text" 
-          placeholder="Titre, Auteur ou ISBN..." 
-          (keyup.enter)="onSearch(searchInputRef.value, genreSelectRef.value, sortSelectRef.value)"
-          class="md:col-span-2 p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm">
+    <section class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-10">
+        <div class="flex flex-col gap-4">
 
-        <select 
-          #genreSelectRef
-          class="p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm cursor-pointer">
-          <option value="">Toutes les catégories</option>
-          <option value="1">Science Fiction</option>
-          <option value="2">Dystopian</option>
-          <option value="3">Classic Literature</option>
-        </select>
+            <input
+                #searchInputRef
+                type="text"
+                placeholder="Titre, Auteur ou ISBN..."
+                (keyup.enter)="onSearch(searchInputRef.value, genreSelectRef.value, sortSelectRef.value)"
+                class="p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm">
 
-        <select 
-          #sortSelectRef
-          class="p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm cursor-pointer">
-          <option value="id,desc">Plus récents</option>
-          <option value="title,asc">Titre (A-Z)</option>
-          <option value="title,desc">Titre (Z-A)</option>
-          <option value="publishDate,desc">Date de parution (Récents)</option>
-          <option value="publishDate,asc">Date de parution (Anciens)</option>
-        </select>
-      </div>
-    </div>
+            <div class="grid grid-cols-1 lg:grid-cols-[auto,1fr,1fr,auto] gap-4 items-center">
+                <button
+                        (click)="openNewBookModal()"
+                        class="bg-[#585942] text-white h-14 w-40 rounded-3xl flex items-center justify-center text-base font-light tracking-wide hover:opacity-90 transition duration-150 shadow-md justify-self-start whitespace-nowrap">
+                    Nouvel ouvrage
+                </button>
 
-    <button 
-      (click)="onSearch(searchInputRef.value, genreSelectRef.value, sortSelectRef.value)"
-      class="bg-[#585942] text-white h-24 w-48 rounded-3xl flex items-center justify-center text-xl font-light tracking-wide hover:opacity-90 transition duration-150 shadow-md justify-self-center">
-      Rechercher
-    </button>
+                <select
+                    #genreSelectRef
+                    class="p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm cursor-pointer">
+                    <option value="">Toutes les catégories</option>
+                    <option value="1">Science Fiction</option>
+                    <option value="2">Dystopian</option>
+                    <option value="3">Classic Literature</option>
+                </select>
 
-  </div>
-</section>
+                <select
+                    #sortSelectRef
+                    class="p-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FFC857] focus:border-[#FFC857] outline-none bg-white text-base text-gray-700 w-full shadow-sm cursor-pointer">
+                    <option value="id,desc">Plus récents</option>
+                    <option value="title,asc">Titre (A-Z)</option>
+                    <option value="title,desc">Titre (Z-A)</option>
+                    <option value="publishDate,desc">Date de parution (Récents)</option>
+                    <option value="publishDate,asc">Date de parution (Anciens)</option>
+                </select>
 
-  <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100">
-    
-    @if (isLoading()) {
-      <div class="py-12 text-center text-slate-500 font-light">
-        Chargement des ouvrages...
-      </div>
-    } @else {
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm border-collapse">
-          
-          <thead class="border-b border-slate-200 text-slate-600 font-light">
-            <tr>
-              <th class="p-4 pl-6 font-light w-[28%]">Titre</th>
-              <th class="p-4 font-light w-[20%]">Auteur</th>
-              <th class="p-4 font-light w-[20%]">Genre</th>
-              <th class="p-4 font-light w-[14%]">ISBN</th>
-              <th class="p-4 pr-6 font-light w-[18%] text-right">Actions</th>
-            </tr>
-          </thead>
-          
-          <tbody class="divide-y divide-slate-100">
-            @for (book of books(); track book.id) {
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 pl-6 font-medium text-slate-950 align-top pt-5">{{ book.title }}</td>
-                <td class="p-4 align-top pt-5">{{ book.author.join(', ') }}</td>
-                <td class="p-4 align-top pt-5">{{ book.genres.join(', ') }}</td>
-                <td class="p-4 align-top pt-5">{{ book.isbn }}</td>
-                <td class="p-4 pr-6 align-top pt-3 text-right">
-                  <div class="flex items-center justify-end gap-2">
-                    <a [routerLink]="['copies', book.id]" class="bg-[#585942] text-white px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-opacity-90 transition shadow-sm inline-block">
-                      Exemplaires
-                    </a>
-                    <button
-                    (click)="openUpdateBookModal(book.id)"
-                     class="border border-[#585942] text-[#585942] px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-slate-50 transition shadow-sm">
-                      Modifier
-                    </button>
+                <button
+                        (click)="onSearch(searchInputRef.value, genreSelectRef.value, sortSelectRef.value)"
+                        class="bg-[#585942] text-white h-14 w-40 rounded-3xl flex items-center justify-center text-base font-light tracking-wide hover:opacity-90 transition duration-150 shadow-md justify-self-end whitespace-nowrap">
+                    Rechercher
+                </button>
+            </div>
 
-                    <button
-                     (click)="openDeleteBookModal(book)"
-                      class="border border-rose-600 text-rose-600 px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-rose-50 transition shadow-sm">
-                      Supprimer
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" class="py-8 text-center text-slate-400 font-light">Aucun ouvrage trouvé.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-  
-          @if (totalPages() > 1) {
-        <div class="flex items-center justify-between border-t border-slate-200 pt-6 mt-4 px-4">
-          <div class="text-xs text-slate-500 font-light">
-            Page {{ currentPage() + 1 }} sur {{ totalPages() }} ({{ totalElements() }} exemplaires)
-          </div>
-          <div class="flex items-center gap-2">
-            <button 
-              [disabled]="currentPage() === 0"
-              (click)="goToPage(currentPage() - 1)"
-              class="px-4 py-2 text-xs font-light rounded-full border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition">
-              Précédent
-            </button>
-            <button 
-              [disabled]="currentPage() >= totalPages() - 1"
-              (click)="goToPage(currentPage() + 1)"
-              class="px-4 py-2 text-xs font-light rounded-full border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition">
-              Suivant
-            </button>
-          </div>
         </div>
-      }
-    
-  </section>
+    </section>
 
-  
+    <section class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100">
+
+        @if (isLoading()) {
+            <div class="py-12 text-center text-slate-500 font-light">
+                Chargement des ouvrages...
+            </div>
+        } @else {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+
+                    <thead class="border-b border-slate-200 text-slate-600 font-light">
+                    <tr>
+                        <th class="p-4 pl-6 font-light w-[28%]">Titre</th>
+                        <th class="p-4 font-light w-[20%]">Auteur</th>
+                        <th class="p-4 font-light w-[20%]">Genre</th>
+                        <th class="p-4 font-light w-[14%]">ISBN</th>
+                        <th class="p-4 pr-6 font-light w-[18%] text-right">Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100">
+                        @for (book of books(); track book.id) {
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-4 pl-6 font-medium text-slate-950 align-top pt-5">{{ book.title }}</td>
+                                <td class="p-4 align-top pt-5">{{ book.author.join(', ') }}</td>
+                                <td class="p-4 align-top pt-5">{{ book.genres.join(', ') }}</td>
+                                <td class="p-4 align-top pt-5">{{ book.isbn }}</td>
+                                <td class="p-4 pr-6 align-top pt-3 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a [routerLink]="['copies', book.id]" class="bg-[#585942] text-white px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-opacity-90 transition shadow-sm inline-block">
+                                            Exemplaires
+                                        </a>
+                                        <button
+                                                (click)="openUpdateBookModal(book.id)"
+                                                class="border border-[#585942] text-[#585942] px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-slate-50 transition shadow-sm">
+                                            Modifier
+                                        </button>
+
+                                        <button
+                                                (click)="openDeleteBookModal(book)"
+                                                class="border border-rose-600 text-rose-600 px-4 py-2.5 rounded-full text-xs font-light tracking-wide hover:bg-rose-50 transition shadow-sm">
+                                            Supprimer
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        } @empty {
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-400 font-light">Aucun ouvrage trouvé.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (totalPages() > 1) {
+            <div class="flex items-center justify-between border-t border-slate-200 pt-6 mt-4 px-4">
+                <div class="text-xs text-slate-500 font-light">
+                    Page {{ currentPage() + 1 }} sur {{ totalPages() }} ({{ totalElements() }} exemplaires)
+                </div>
+                <div class="flex items-center gap-2">
+                    <button
+                            [disabled]="currentPage() === 0"
+                            (click)="goToPage(currentPage() - 1)"
+                            class="px-4 py-2 text-xs font-light rounded-full border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition">
+                        Précédent
+                    </button>
+                    <button
+                            [disabled]="currentPage() >= totalPages() - 1"
+                            (click)="goToPage(currentPage() + 1)"
+                            class="px-4 py-2 text-xs font-light rounded-full border border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition">
+                        Suivant
+                    </button>
+                </div>
+            </div>
+        }
+
+    </section>
+
+
 
 </div>
