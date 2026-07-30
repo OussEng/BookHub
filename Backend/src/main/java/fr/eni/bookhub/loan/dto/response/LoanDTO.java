@@ -20,6 +20,9 @@ public class LoanDTO {
     private LocalDate dueDate;
     private LocalDate returnDate;
     private LoanStatus status;
+    private String bookTitle;
+    private String loanerFirstName;
+    private String loanerLastName;
 
     public LoanDTO(Loan loan) {
         this.id = loan.getId();
@@ -29,5 +32,9 @@ public class LoanDTO {
         this.dueDate = loan.getDueDate();
         this.returnDate = loan.getReturnDate();
         this.status = loan.getStatus();
+        this.bookTitle = loan.getBookCopyLoaned().getBook().getTitle();
+        this.loanerFirstName = loan.getLoaner().getFirstname();
+        this.loanerLastName = loan.getLoaner().getLastname();
+
     }
 }

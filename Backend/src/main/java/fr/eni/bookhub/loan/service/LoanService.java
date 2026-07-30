@@ -15,6 +15,7 @@ import fr.eni.bookhub.reservation.service.ReservationService;
 import fr.eni.bookhub.security.AuthenticatedUserProvider;
 import fr.eni.bookhub.user.entity.User;
 import lombok.AllArgsConstructor;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
+@EnableMethodSecurity
 public class LoanService {
 
     private final ILoanDao loanRepository;
@@ -70,9 +72,12 @@ public class LoanService {
     public Loan getLoanEntityById(Long id) {
         return loanRepository.findById(id)
                 .orElseThrow(() -> new LoanException("Loan not found"));
-
     }
 
+    /*
+    Method in charge to make a new loan if the book searched isn't loan.
+    @id : id of the book copy you want to loan.
+     */
     @Transactional
     public void createLoan(Long bookId) {
         User currentUser = authenticatedUserProvider.getCurrentUser();
@@ -110,6 +115,11 @@ public class LoanService {
                 .orElseThrow(() -> new LoanException("Aucun exemplaire disponible dans un état correct"));
     }
 
+
+    /*
+    Method in charge to declare to return a loan when the book return to the library.
+    @id : id of the loan you want to close.
+     */
     @Transactional
     public void returnLoan(Long loanId) {
         Loan loanFound = loanRepository.findById(loanId)
@@ -117,10 +127,6 @@ public class LoanService {
 
         if (loanFound.getStatus() == LoanStatus.RETURNED) {
             throw new ConflictException("Retour déjà enregistré");
-        }
-
-        if (this.IsLoanReturnDelayed(loanFound)) {
-            loanFound.setDueDate(LocalDate.now());
         }
 
         BookCopy bookCopy = loanFound.getBookCopyLoaned();
@@ -143,10 +149,6 @@ public class LoanService {
     @loan Object Loan you want to test.
      */
     public boolean IsLoanReturnDelayed(Loan loan) {
-        LocalDate loanDate = loan.getLoanDate();
-        LocalDate dueDate = loanDate.plusDays(14);
-        LocalDate now = LocalDate.now();
-
-        return now.isAfter(dueDate);
+        return LocalDate.now().isAfter(loan.getDueDate());
     }
 }
