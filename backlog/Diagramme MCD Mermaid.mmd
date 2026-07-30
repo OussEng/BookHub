@@ -1,0 +1,48 @@
+erDiagram
+    UTILISATEUR {
+        varchar firstname
+        varchar lastname
+        varchar phone
+        varchar username
+        varchar email
+        varchar password
+        varchar role
+    }
+
+    AUTEUR {
+        varchar firstname
+        varchar lastname
+        varchar penName
+    }
+
+    GENRE {
+        varchar label
+    }
+
+    LIVRE {
+        varchar title
+        varchar isbn
+        varchar img
+        date publishDate
+        varchar description
+    }
+
+    EXEMPLAIRE {
+        varchar serialNumber
+        varchar bookStatus
+        varchar condition
+    }
+
+    REFRESH_TOKEN {
+        varchar tokenHash
+        timestamp expiresAt
+        boolean revoked
+    }
+
+    UTILISATEUR ||--o{ REFRESH_TOKEN : POSSEDER
+    LIVRE ||--o{ EXEMPLAIRE : POSSEDER
+    LIVRE }o--o{ AUTEUR : ECRIRE
+    LIVRE }o--o{ GENRE : CLASSER
+    UTILISATEUR }o--o{ EXEMPLAIRE : EMPRUNTER
+    UTILISATEUR }o--o{ LIVRE : DONNER_AVIS
+    UTILISATEUR }o--o{ LIVRE : RESERVER

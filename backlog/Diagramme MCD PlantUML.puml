@@ -1,0 +1,120 @@
+@startuml BookHub-MCD
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor<<entity>> White
+  BackgroundColor<<association>> LightYellow
+  BorderColor Black
+}
+
+class UTILISATEUR <<entity>> {
+  __idUtilisateur__
+  firstname
+  lastname
+  phone
+  username
+  email
+  password
+  role
+}
+
+class AUTEUR <<entity>> {
+  __idAuteur__
+  firstname
+  lastname
+  penName
+}
+
+class GENRE <<entity>> {
+  __idGenre__
+  label
+}
+
+class LIVRE <<entity>> {
+  __idLivre__
+  title
+  isbn
+  img
+  publishDate
+  description
+}
+
+class EXEMPLAIRE <<entity>> {
+  __idExemplaire__
+  serialNumber
+  bookStatus
+  condition
+}
+
+class REFRESH_TOKEN <<entity>> {
+  __idRefreshToken__
+  tokenHash
+  expiresAt
+  revoked
+}
+
+' --- Associations binaires simples ---
+class POSSEDER1 <<association>> {
+  POSSEDER
+}
+LIVRE "0,n" -- POSSEDER1
+POSSEDER1 -- "1,1" EXEMPLAIRE
+
+class POSSEDER2 <<association>> {
+  POSSEDER
+}
+UTILISATEUR "1,1" -- POSSEDER2
+POSSEDER2 -- "0,n" REFRESH_TOKEN
+
+' --- Associations plusieurs-à-plusieurs simples ---
+class ECRIRE <<association>> {
+  ECRIRE
+}
+LIVRE "1,n" -- ECRIRE
+ECRIRE -- "0,n" AUTEUR
+
+class CLASSER <<association>> {
+  CLASSER
+}
+LIVRE "1,n" -- CLASSER
+CLASSER -- "0,n" GENRE
+
+' --- Association porteuse de données EMPRUNTER ---
+class EMPRUNTER <<association>> {
+  EMPRUNTER
+  --
+  loanDate
+  dueDate
+  returnDate
+  status
+}
+UTILISATEUR "0,n" -- EMPRUNTER
+EMPRUNTER -- "0,n" EXEMPLAIRE
+
+' --- Association porteuse de données DONNER_AVIS ---
+class DONNER_AVIS <<association>> {
+  DONNER_AVIS
+  --
+  rating
+  comment
+  status
+  createdAt
+  updatedAt
+  moderatedAt
+}
+UTILISATEUR "0,n" -- DONNER_AVIS
+DONNER_AVIS -- "0,n" LIVRE
+
+' --- Association ternaire RESERVER ---
+class RESERVER <<association>> {
+  RESERVER
+  --
+  reservesDate
+  status
+  notifiedAt
+  pickupDeadline
+}
+UTILISATEUR "0,n" -- RESERVER
+RESERVER -- "0,n" LIVRE
+RESERVER -- "0,1" EXEMPLAIRE
+
+@enduml

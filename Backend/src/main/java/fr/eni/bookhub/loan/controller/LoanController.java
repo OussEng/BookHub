@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/loans")
 @AllArgsConstructor
-public class LoanController {
+public class LoanController implements LoanControllerApi {
 
     private final LoanService loanService;
 

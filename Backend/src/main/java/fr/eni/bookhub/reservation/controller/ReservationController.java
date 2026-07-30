@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reservations")
 @PreAuthorize("isAuthenticated()")
-public class ReservationController {
+public class ReservationController implements ReservationControllerApi {
 
     private final ReservationService reservationService;
 
@@ -22,20 +22,20 @@ public class ReservationController {
     }
 
     @PostMapping("/{bookId}")
-    public ResponseEntity<ReservationResponse> createReservation (
+    public ResponseEntity<ReservationResponse> createReservation(
             @PathVariable Long bookId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reservationService.createReservation(bookId));
     }
 
     @DeleteMapping("/{reservationId}")
-    public ResponseEntity<Void> cancelReservation (
+    public ResponseEntity<Void> cancelReservation(
             @PathVariable Long reservationId) {
         reservationService.cancelReservation(reservationId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<ReservationResponse>> getMyReservations () {
+    public ResponseEntity<List<ReservationResponse>> getMyReservations() {
         return ResponseEntity.ok(reservationService.getMyReservations());
     }
 

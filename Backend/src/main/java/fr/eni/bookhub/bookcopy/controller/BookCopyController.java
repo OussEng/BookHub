@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/book-copies")
-public class BookCopyController {
+public class BookCopyController implements BookCopyControllerApi {
 
     private final BookCopyService bookCopyService;
 

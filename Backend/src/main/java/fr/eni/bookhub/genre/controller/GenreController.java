@@ -13,12 +13,12 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/genre")
-public class GenreController {
+public class GenreController implements GenreControllerApi {
 
     private final GenreService genreService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<GenreResponse>> getGenres(){
+    public ResponseEntity<List<GenreResponse>> getGenres() {
         return ResponseEntity.ok(genreService.getAllGenres());
     }
 

@@ -1,0 +1,123 @@
+@startuml BookHub-MLD
+skinparam class {
+  BackgroundColor White
+  BorderColor Black
+}
+hide circle
+hide methods
+
+class UTILISATEUR {
+  <u>idUtilisateur</u> : int
+  firstname : varchar
+  lastname : varchar
+  phone : varchar
+  username : varchar
+  email : varchar
+  password : varchar
+  role : varchar
+}
+
+class AUTEUR {
+  <u>idAuteur</u> : int
+  firstname : varchar
+  lastname : varchar
+  penName : varchar
+}
+
+class GENRE {
+  <u>idGenre</u> : int
+  label : varchar
+}
+
+class LIVRE {
+  <u>idLivre</u> : int
+  title : varchar
+  isbn : varchar
+  img : varchar
+  publishDate : date
+  description : varchar
+}
+
+class EXEMPLAIRE {
+  <u>idExemplaire</u> : int
+  serialNumber : varchar
+  bookStatus : varchar
+  condition : varchar
+  #idLivre : int
+}
+
+class REFRESH_TOKEN {
+  <u>idRefreshToken</u> : int
+  tokenHash : varchar
+  expiresAt : timestamp
+  revoked : boolean
+  #idUtilisateur : int
+}
+
+class ECRIRE {
+  <u>#idLivre</u> : int
+  <u>#idAuteur</u> : int
+}
+
+class CLASSER {
+  <u>#idLivre</u> : int
+  <u>#idGenre</u> : int
+}
+
+class EMPRUNTER {
+  <u>idEmprunt</u> : int
+  #idUtilisateur : int
+  #idExemplaire : int
+  loanDate : date
+  dueDate : date
+  returnDate : date
+  status : varchar
+}
+
+class DONNER_AVIS {
+  <u>idAvis</u> : int
+  #idUtilisateur : int
+  #idLivre : int
+  rating : int
+  comment : varchar
+  status : varchar
+  createdAt : timestamp
+  updatedAt : timestamp
+  moderatedAt : timestamp
+  .. contrainte ..
+  unique(idUtilisateur, idLivre)
+}
+
+class RESERVATION {
+  <u>idReservation</u> : int
+  #idUtilisateur : int
+  #idLivre : int
+  #idExemplaire : int
+  reservesDate : timestamp
+  status : varchar
+  notifiedAt : timestamp
+  pickupDeadline : timestamp
+  .. contrainte ..
+  idExemplaire nullable
+}
+
+EXEMPLAIRE "0,n" --> "1,1" LIVRE
+REFRESH_TOKEN "0,n" --> "1,1" UTILISATEUR
+
+ECRIRE "0,n" --> "1,1" LIVRE
+ECRIRE "0,n" --> "1,1" AUTEUR
+
+CLASSER "0,n" --> "1,1" LIVRE
+CLASSER "0,n" --> "1,1" GENRE
+
+EMPRUNTER "0,n" --> "1,1" UTILISATEUR
+EMPRUNTER "0,n" --> "1,1" EXEMPLAIRE
+
+DONNER_AVIS "0,n" --> "1,1" UTILISATEUR
+DONNER_AVIS "0,n" --> "1,1" LIVRE
+
+RESERVATION "0,n" --> "1,1" UTILISATEUR
+RESERVATION "0,n" --> "1,1" LIVRE
+RESERVATION "0,n" --> "0,1" EXEMPLAIRE
+
+@enduml

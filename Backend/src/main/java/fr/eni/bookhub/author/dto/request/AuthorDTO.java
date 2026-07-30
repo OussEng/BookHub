@@ -1,4 +1,4 @@
-package fr.eni.bookhub.author.dto;
+package fr.eni.bookhub.author.dto.request;
 
 import lombok.*;
 
