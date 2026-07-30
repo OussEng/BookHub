@@ -1,0 +1,89 @@
+@startuml
+title US-RESA-01 — Expiration des 72h (tâche planifiée)
+
+participant "Horloge Spring" as H
+participant "ReservationExpirationTask" as T
+participant "ReservationService" as S
+participant "IReservationDao" as RD
+box "SQL Server — base bookhub" #F5F5F5
+database "table\nreservation" as TRES
+database "procédure\nusp_promouvoir_file" as P
+database "table\nbook_copies" as TBC
+end box
+
+H -> T : @Scheduled(fixedDelay = 15 min)
+activate T
+note right of H : aucun acteur humain ici, et aucune requête HTTP.\nLe déclencheur SQL ne peut pas prendre ce relais :\nun déclencheur réagit à une écriture, jamais au\ntemps qui passe. Il faut donc que quelqu'un aille\nposer la question à intervalles réguliers.\n--\nfixedDelay et non fixedRate : le prochain départ\nest compté après la fin du précédent, deux passes\nne peuvent pas se chevaucher.\n--\nUn délai de quelques minutes est sans conséquence\nsur une fenêtre de 72h. Une file différée (Quartz,\ncourtier de messages) donnerait la seconde près,\nau prix d'une infrastructure que ce besoin ne\njustifie pas.\n--\nAu redémarrage de l'application, la première passe\nrattrape tout ce qui a expiré pendant l'arrêt :\nrien ne se perd.
+
+T -> S : trouverEchues()
+activate S
+
+S -> RD : findByStatusAndPickupDeadlineBefore\n(AVAILABLE, maintenant UTC)
+RD -> TRES : SELECT ... WHERE reservation_status = 'AVAILABLE'\nAND pickup_deadline < SYSUTCDATETIME()
+TRES --> RD : lignes échues
+note right of RD : seules les AVAILABLE portent une échéance.\nUne PENDING n'a pas encore de pickup_deadline :\nelle attend son tour, sans horloge.\n--\nComparaison en UTC des deux côtés : Java écrit\npickup_deadline en UTC, la base interroge avec\nSYSUTCDATETIME().
+
+RD --> S : liste, éventuellement vide
+S --> T : identifiants des réservations échues
+deactivate S
+
+alt aucune réservation échue
+    note right of T : cas le plus fréquent : la tâche ressort\nsans rien écrire. Aucune trace, aucune\ntransaction ouverte.
+
+else une ou plusieurs réservations échues
+
+    loop pour chaque réservation échue
+        note right of T : la boucle est portée par la tâche, pas par le\nservice. Une transaction posée sur une méthode\nappelée depuis le même bean ne s'applique pas :\nSpring passe par un mandataire, et l'appel\ninterne ne le traverse pas. Chaque tour doit\ndonc être un appel venu de l'extérieur.\n--\nUn tour = une transaction : si un exemplaire est\ndans un état inattendu, seule cette réservation\nest laissée de côté, les autres avancent.\n--\nTraitées une par une, et non en bloc : la\nprocédure prend des paramètres scalaires parce\nque trois chemins différents l'appellent. La\nboucle coûte moins que dupliquer la logique de file.
+
+        T -> S : expirer(reservationId)
+        activate S
+
+        group @Transactional
+
+            note right of S : seul l'identifiant traverse la boucle.\nLa liste a été lue hors transaction : ses\nobjets en sont détachés. La réservation est\nrelue ici, dans la transaction qui va l'écrire.
+
+            S -> RD : findById(reservationId)
+            RD --> S : réservation
+
+            S -> RD : save(statut = EXPIRED)
+            RD -> TRES : UPDATE reservation
+            note right of RD : EXPIRED et non CANCELLED : la distinction\nest voulue. CANCELLED signifie que le lecteur\na renoncé, EXPIRED qu'il n'a pas répondu.\n--\nEXPIRED est un état final : le lecteur ne\nretourne pas en fin de file. S'il veut encore\nl'ouvrage, il réserve à nouveau.\n--\nORDRE OBLIGATOIRE : le statut passe à EXPIRED\nAVANT l'appel à la procédure — voir\nl'étape 3 plus bas.
+
+            S -> RD : promouvoirFile(bookId, bookCopyId)
+            RD -> P : EXEC usp_promouvoir_file\n(@book_id, @book_copy_id, @promu OUTPUT)
+            activate P
+            note right of RD : deuxième des trois chemins vers la procédure.\nLes deux autres : le déclencheur sur loans au\nretour d'un exemplaire, et l'annulation d'une\nréservation AVAILABLE.\n--\nL'exemplaire arrive ici depuis RESERVED, alors\nqu'au retour d'un prêt il arrive depuis LOANED.\nLa procédure accepte les deux : son filtre porte\nsur AVAILABLE ou RESERVED.
+
+            P -> TRES : 1. SELECT la PENDING la plus ancienne\nde ce livre (ordre par reserves_date)\nWITH (UPDLOCK, ROWLOCK, READPAST)
+
+            alt aucune réservation en attente
+                P -> TBC : 2. UPDATE book_copies\nRESERVED → AVAILABLE
+                note right of P : plus personne dans la file : l'exemplaire\nredevient empruntable par tous.\nSans cette remise à AVAILABLE il resterait\nmis de côté pour un lecteur qui ne viendra pas.
+
+            else une file existe
+                P -> TRES : 3. l'exemplaire est-il déjà tenu par une\nautre réservation AVAILABLE ?
+
+                alt oui, il est déjà mis de côté pour un autre
+                    note right of P : la procédure ressort sans rien écrire.\nC'est ce garde-fou qui impose de passer la\nréservation échue à EXPIRED AVANT l'appel :\nsinon elle se verrait elle-même ici et la\nfile cesserait d'avancer.
+
+                else non, il est libre
+                    P -> TBC : 4. UPDATE book_copies\nbook_status = RESERVED
+                    P -> TRES : 5. UPDATE le PREMIER :\nstatut = AVAILABLE,\nbook_copy_id = l'exemplaire libéré,\nnotified_at = SYSUTCDATETIME(),\npickup_deadline = notified_at + 72h
+                    note right of P : l'exemplaire ne revient pas sur l'étagère :\nil glisse au suivant, qui dispose à son tour\nde 72h pleines. Le compteur repart de zéro\npour lui.\n--\nNotification = statut visible dans l'espace\npersonnel. Aucun courriel n'est envoyé :\nle lecteur découvre son tour en se connectant.\n--\nZéro ligne touchée à cette étape — exemplaire\nperdu, en réparation ou déjà repris — et la\nprocédure ressort sans promouvoir personne,\nplutôt que de laisser une réservation pointer\nsur du vide.
+                end
+            end
+
+            P --> RD : @promu (1 si quelqu'un a été promu)
+            deactivate P
+            RD --> S : fin de l'appel
+        end
+
+        S --> T : réservation traitée
+        deactivate S
+    end
+end
+
+T --> H : la tâche se termine\nprochain départ dans 15 min
+deactivate T
+
+@enduml

@@ -1,6 +1,5 @@
 package fr.eni.bookhub.book.dao;
 
-import aj.org.objectweb.asm.commons.Remapper;
 import fr.eni.bookhub.book.entity.Book;
 import fr.eni.bookhub.book.repository.BookRepository;
 import lombok.AllArgsConstructor;
@@ -38,6 +37,7 @@ public class BookDaoImpl implements IBookDao {
     }
 
     @Override
+
     public boolean existsById(Long id) {
         return bookRepository.existsById(id);
     }
@@ -45,5 +45,12 @@ public class BookDaoImpl implements IBookDao {
     @Override
     public void deleteById(Long id) {
         bookRepository.deleteById(id);
+
+    public List<Book> findAll() {
+        return bookRepository.findAll();
+    }
+
+
+
     }
 }

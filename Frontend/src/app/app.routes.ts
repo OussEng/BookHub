@@ -4,6 +4,7 @@ import { RegisterComponent } from './pages/register/register.component';
 import { profilComponent } from './pages/profil/profil.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+
 import { Home } from './pages/home/home/home';
 import { BookDetails } from './pages/book-details/book-details';
 import { LibrarianHome } from './pages/backoffice/librarian/librarian-home/librarian-home';

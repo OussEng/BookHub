@@ -1,0 +1,111 @@
+@startuml
+title US-LOAN-03 — Retour (Bibliothécaire) — modèle avec mise de côté
+
+actor Bibliothécaire as B
+participant "LoanController" as C
+participant "LoanService" as S
+participant "ILoanDao" as LD
+participant "IBookCopyDao" as BCD
+box "SQL Server — base bookhub" #F5F5F5
+database "table\nbook_copies" as TBC
+database "table\nloans" as TLOAN
+database "déclencheur\ntrg_loans_retour" as T
+database "procédure\nusp_promouvoir_file" as P
+database "table\nreservation" as TRES
+end box
+participant "GlobalExceptionHandler" as E
+
+B -> C : PUT /api/loans/{id}/return
+activate C
+note right of C : action réservée à LIBRARIAN et ADMIN\n(rôles cumulatifs)
+C -> S : enregistrerRetour(loanId)
+activate S
+
+group @Transactional
+
+    S -> LD : findById(loanId)
+    LD --> S : emprunt ou vide
+
+    alt l'emprunt n'existe pas
+        S -> E : lève ResourceNotFoundException
+        E --> B : 404 emprunt introuvable
+
+    else l'emprunt existe
+
+        alt l'emprunt est déjà rendu
+            note right of S : cas d'un double enregistrement\ndu même retour par le bibliothécaire
+            S -> E : lève ConflictException
+            E --> B : 409 retour déjà enregistré
+
+        else l'emprunt est actif
+
+            S -> BCD : saveAndFlush(exemplaire,\nbook_status = AVAILABLE)
+            BCD -> TBC : UPDATE book_copies\nLOANED → AVAILABLE
+            note right of BCD : ORDRE OBLIGATOIRE : l'exemplaire est libéré\nAVANT l'écriture sur loans. Le déclencheur part\nsur cette écriture-là et lit book_status au même\ninstant : s'il y trouve encore LOANED, la file\nn'avance pas, et sans aucune erreur.\n--\nsaveAndFlush et non save : Hibernate regroupe\nles UPDATE au flush et ne suit pas l'ordre des\nsetters. Le flush explicite est ce qui garantit\nla séquence.
+
+            S -> LD : save(returnDate = aujourd'hui,\nstatut = rendu)
+            note right of LD : deux statuts seulement : ACTIVE et RETURNED.\nLe retard éventuel se déduit de due_date,\nil n'est pas un statut (RG-LOAN-03).\n--\nL'énumération de la branche en cours porte\nencore RETURN : le déclencheur filtre sur\ncette valeur. Les deux devront être renommés\ndans le même lot.
+
+            LD -> TLOAN : UPDATE loans
+            TLOAN -> T : le déclencheur se déclenche
+            activate T
+
+            alt la colonne de statut n'a pas bougé
+                note right of T : garde-fou UPDATE(status) : toute autre\nmodification d'un prêt ressort ici sans\nrien déclencher.
+
+            else passage au statut rendu
+            note right of T : le déclencheur part sur l'UPDATE de loans,\nuniquement sur le PASSAGE au statut rendu :\nstatut rendu dans inserted, autre chose dans\ndeleted. Sans cette condition, toute\nmodification ultérieure d'un prêt déjà rendu\nrelancerait la file.\n--\nIl s'exécute dans la base, ne reçoit aucun appel\nde l'application et ne lui renvoie rien\n(US-RESA-03).\n--\nUn déclencheur SQL Server se déclenche par\nrequête et non par ligne : un curseur boucle\nsur inserted, la procédure prenant des\nparamètres scalaires.
+
+            T -> TBC : JOIN book_copies pour retrouver\nle book_id de l'exemplaire rendu
+            note right of T : loans ne porte que book_copy_loaned_id.\nLe livre s'atteint par l'exemplaire, d'où\ncette jointure dans le curseur.
+
+            T -> P : appelle usp_promouvoir_file\n(book_id, book_copy_id rendu)
+            activate P
+            note right of P : logique écrite une seule fois.\nTrois chemins l'appellent :\nce déclencheur, la tâche d'expiration,\net l'annulation d'une réservation AVAILABLE.
+
+            P -> TRES : 1. SELECT la PENDING la plus ancienne\nde ce livre (ordre par reserves_date)\nWITH (UPDLOCK, ROWLOCK, READPAST)
+            note right of P : UPDLOCK et READPAST ferment la course :\nsi deux exemplaires du même livre sont rendus\nau même instant, le second appel passe au\nsuivant de la file au lieu d'attendre — sans\nquoi les deux promouvraient le même lecteur.
+
+            alt aucune réservation en attente
+                note right of P : personne n'attend. L'étape 2 de la procédure\n(RESERVED → AVAILABLE) ne touche ici aucune ligne :\nl'exemplaire vient d'être remis à AVAILABLE par le\nservice, il est déjà empruntable par tous.\n--\nCette étape sert aux deux autres chemins, où\nl'exemplaire arrive depuis RESERVED.
+
+            else une file existe
+                P -> TRES : 3. l'exemplaire est-il déjà tenu par une\nautre réservation AVAILABLE ?
+
+                alt oui, il est déjà mis de côté pour un autre
+                    note right of P : la procédure ressort sans rien écrire.\nElle refuse de voler un exemplaire\ndéjà promis à un autre lecteur.
+
+                else non, il est libre
+                    P -> TBC : 4. UPDATE book_copies\nbook_status = RESERVED
+                    P -> TRES : 5. UPDATE le PREMIER :\nstatut = AVAILABLE,\nbook_copy_id = l'exemplaire rendu,\nnotified_at = SYSUTCDATETIME(),\npickup_deadline = notified_at + 72h
+                    note right of P : seul le premier de la file est notifié.\nL'exemplaire lui est mis de côté :\naucun autre lecteur ne peut l'emprunter\npendant 72h. Les suivants restent PENDING\net avancent d'un rang.\n--\nL'exemplaire d'abord, la réservation ensuite :\nsi la mise de côté échoue, aucune réservation\nne pointe sur du vide.\n--\n72h fixes, et non 24h : la bibliothèque a des\njours de fermeture. Reporter la date sur le\nprochain jour ouvré exigerait un référentiel\nd'horaires, absent du périmètre.\n--\nHeure UTC des deux côtés : Java écrit\nreserves_date en UTC, la base fait de même.\n--\nNotification = statut visible dans l'espace\npersonnel. Aucun courriel n'est envoyé.\n--\nZéro ligne touchée à cette étape — exemplaire\nperdu, en réparation ou déjà repris — et la\nprocédure ressort sans promouvoir personne,\nplutôt que de laisser une réservation pointer\nsur du vide.
+                end
+            end
+
+            P --> T : fin de la procédure
+            note right of P : le paramètre de sortie @promu n'est pas\nrécupéré : personne ici n'a besoin de savoir\nsi quelqu'un a été promu. Les appels Java\nle lisent, le déclencheur non.
+            deactivate P
+            end
+
+            T --> TLOAN : déclencheur terminé
+            deactivate T
+            TLOAN --> LD : UPDATE loans terminé\n(déclencheur inclus)
+            LD --> S : emprunt mis à jour
+
+            S -> BCD : refresh(exemplaire)
+            BCD -> TBC : SELECT book_status
+            TBC --> BCD : valeur écrite par le déclencheur
+            BCD --> S : book_status à jour
+            note right of S : refresh et non findById : l'exemplaire est déjà\nsuivi par Hibernate depuis le saveAndFlush.\nUn findById rendrait l'instance du cache de\npremier niveau, encore à AVAILABLE, et le\nservice ne verrait jamais le RESERVED posé\npar le déclencheur.\n--\nLe service et le déclencheur ne se parlent pas\ndirectement : ils communiquent par la base.\nLe déclencheur écrit, puis le service relit\npour voir ce qu'il a fait.
+
+            S --> C : LoanResponse
+            C --> B : 200 OK
+        end
+    end
+
+end
+
+deactivate S
+deactivate C
+
+@enduml
