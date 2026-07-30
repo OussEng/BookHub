@@ -43,16 +43,13 @@ export class LoansService {
     let bookCopiesId:any[] = []
 
     return this.bookCopyService.getBookCopiesByBookId(book.id).pipe(map((result) => {
-        result.forEach(val => bookCopiesId.push(val.id));
+        result.content.forEach(val => bookCopiesId.push(val.id));
 
         for (let i = 0; i < loans.length; i++) {
           if(loans[i].status == 'ACTIVE') {
             pendingLoansId.push(loans[i].bookCopyId);
           }
         }
-
-        console.log(pendingLoansId);
-        console.log(bookCopiesId)
 
         return pendingLoansId.some((loans) => {
           return bookCopiesId.includes(loans)
