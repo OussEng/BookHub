@@ -55,7 +55,7 @@ app/**/*.js
 app/**/*.js.map
 
 # Environnement Angular (fichier local, à créer depuis environment.example.ts)
-/Frontend/src/environments/environment.ts
+src/environments/environment.ts
 
 # dependencies
 node_modules/
