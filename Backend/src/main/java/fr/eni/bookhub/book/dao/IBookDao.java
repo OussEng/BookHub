@@ -12,9 +12,9 @@ public interface IBookDao {
     Optional<Book> findById(Long id);
     Page<Book> findAll(Pageable pageable);
     Book save(Book book);
-
     Page<Book> searchBooks(String search, Long genreId, Pageable pageable);
     boolean existsById(Long id);
-
     void deleteById(Long id);
+    List<Book> findAll();
+    
 }

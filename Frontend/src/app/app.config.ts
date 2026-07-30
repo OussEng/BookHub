@@ -13,7 +13,6 @@ import { AuthService } from './services/auth.service';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withComponentInputBinding()),
-    provideRouter(routes),
     provideHttpClient(
       withInterceptors([authInterceptor, credentialsInterceptor, errorInterceptor]),
       withXsrfConfiguration({
