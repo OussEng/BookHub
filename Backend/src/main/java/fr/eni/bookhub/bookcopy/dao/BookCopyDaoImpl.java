@@ -5,11 +5,13 @@ import fr.eni.bookhub.bookcopy.entity.BookCopy;
 import fr.eni.bookhub.bookcopy.entity.BookStatus;
 import fr.eni.bookhub.bookcopy.entity.Condition;
 import fr.eni.bookhub.bookcopy.repository.BookCopyRepository;
+import fr.eni.bookhub.reservation.entity.ReservationStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,13 +31,29 @@ public class BookCopyDaoImpl implements IBookCopyDao {
         return bookCopyRepository.findAll();
     }
 
-    @Override public boolean existsByBook_IdAndBookStatus(Long bookId, BookStatus bookStatus) {
-        return bookCopyRepository.existsByBook_IdAndBookStatus(bookId, bookStatus);
+    @Override
+    public boolean existsByBook_IdAndBookStatusAndConditionIn(Long bookId, BookStatus bookStatus, Collection<Condition> conditions) {
+        return bookCopyRepository.existsByBook_IdAndBookStatusAndConditionIn(bookId, bookStatus, conditions);
     }
 
     @Override
-    public List<BookCopy> findByBookIdAndBookStatus(Long bookId, BookStatus bookStatus){
+    public List<BookCopy> findByBookIdAndBookStatus(Long bookId, BookStatus bookStatus) {
         return bookCopyRepository.findByBookIdAndBookStatus(bookId, bookStatus);
+    }
+
+    @Override
+    public BookCopy save(BookCopy bookCopy) {
+        return bookCopyRepository.save(bookCopy);
+    }
+
+    @Override
+    public Optional<BookCopy> findByIdForUpdate(Long id) {
+        return bookCopyRepository.findByIdForUpdate(id);
+    }
+
+    @Override
+    public BookCopy saveAndFlush(BookCopy bookCopy) {
+        return bookCopyRepository.saveAndFlush(bookCopy);
     }
 
     @Override
@@ -46,11 +64,6 @@ public class BookCopyDaoImpl implements IBookCopyDao {
     @Override
     public Optional<BookCopy> findBySerialNumber(String serialNumber) {
         return bookCopyRepository.findBySerialNumber(serialNumber);
-    }
-
-    @Override
-    public BookCopy save(BookCopy bookCopy) {
-        return bookCopyRepository.save(bookCopy);
     }
 
     @Override
