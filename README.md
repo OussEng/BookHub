@@ -140,6 +140,18 @@ cd backend
 Requires SQL Server running with a `BookHub` database and the connection details filled in `application.properties` above.
  
 ### Frontend
+
+Before running the frontend, `environments/environment.example.ts` paste it and change its name to `environment.ts`, change the variable to fit your environment.
+
+```
+export const environment = {
+    production: false,
+    apiUrl: 'http://localhost:8080/api'
+};
+
+```
+
+
 ```bash
 cd frontend
 npm install
@@ -172,4 +184,4 @@ ng serve
 |-------------|---------------------|-----------|
 | Admin       | admin@bookhub.com   | Pa$$w0rd1234 |
 | Librarian   | librarian@bookhub.com | Pa$$w0rd1234 |
-| USER      | user@bookhub.com  | Pa$$w0rd1234 |
+| USER      | user@mail.com  | Pa$$w0rd1234 |
