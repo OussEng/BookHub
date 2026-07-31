@@ -128,6 +128,15 @@ jwt.expiration=900000
  
 - `jwt.secret` needs a 256-bit (32+ char) random value, generate with `openssl rand -base64 32`.
 - `jwt.expiration` is in milliseconds — `900000` ms = 15 minutes for the access token.
+
+
+
+
+
+
+populate the database by running the SQL script in **https://github.com/OussEng/BookHub/tree/dev/fixtures**
+
+
 ---
  
 ## Running Locally
@@ -141,7 +150,7 @@ Requires SQL Server running with a `BookHub` database and the connection details
  
 ### Frontend
 
-Before running the frontend, `environments/environment.example.ts` paste it and change its name to `environment.ts`, change the variable to fit your environment.
+Before running the frontend, copy `environments/environment.example.ts` paste it and change its name to `environment.ts`. you change the variables to fit your environment.
 
 ```
 export const environment = {
