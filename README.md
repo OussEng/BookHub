@@ -172,4 +172,4 @@ ng serve
 |-------------|---------------------|-----------|
 | Admin       | admin@bookhub.com   | Pa$$w0rd1234 |
 | Librarian   | librarian@bookhub.com | Pa$$w0rd1234 |
-| Reader      | reader@bookhub.com  | Pa$$w0rd1234 |
+| USER      | user@bookhub.com  | Pa$$w0rd1234 |
