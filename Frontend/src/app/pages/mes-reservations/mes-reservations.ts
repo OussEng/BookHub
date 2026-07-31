@@ -16,9 +16,9 @@ export class MesReservations implements OnInit, OnDestroy {
 
     private reservationService = inject(ReservationService);
 
-    reservations: ReservationResponse[] = [];
+    protected reservations = signal<ReservationResponse[]>([]);
     protected isLoading = signal<boolean>(true);
-    errorMessage = '';
+    protected errorMessage = signal<string>('');
 
     // Sert uniquement à forcer le rafraîchissement de l'affichage :
     // le décompte est recalculé à chaque cycle de détection.
@@ -28,6 +28,9 @@ export class MesReservations implements OnInit, OnDestroy {
     // Identifiant de la réservation en cours d'annulation : le bouton
     // correspondant est désactivé le temps de l'aller-retour.
     protected enCoursAnnulation = signal<number | null>(null);
+    // Même principe pour le retrait : le bouton « Prendre » se désactive
+    // le temps de l'aller-retour.
+    protected enCoursRetrait = signal<number | null>(null);
 
     ngOnInit() {
         this.charger();
@@ -44,24 +47,45 @@ export class MesReservations implements OnInit, OnDestroy {
         }
     }
 
+    // Sortie de secours si le premier chargement a échoué : sans elle,
+    // l'écran reste bloqué sur le message d'erreur, puisque le tableau
+    // — et donc les boutons — n'est pas rendu tant qu'il est affiché.
+    reessayer() {
+        this.isLoading.set(true);
+        this.errorMessage.set('');
+        this.charger();
+    }
+
     private charger() {
         this.reservationService.mesReservations().subscribe({
             next: (data) => {
-                this.reservations = data;
+                this.reservations.set(data);
+                this.errorMessage.set('');
                 this.isLoading.set(false);
             },
             error: (err) => {
-                this.errorMessage = "Impossible de charger vos réservations.";
+                this.errorMessage.set("Impossible de charger vos réservations.");
                 this.isLoading.set(false);
                 console.error(err);
             }
         });
     }
 
-    // Seule une réservation encore dans la file peut être annulée.
-    // Les états finaux — empruntée, annulée, expirée — n'offrent rien à annuler.
-    annulable(statut: ReservationStatus): boolean {
-        return statut === 'PENDING' || statut === 'READY_FOR_PICKUP';
+    prendre(reservation: ReservationResponse) {
+        this.enCoursRetrait.set(reservation.id);
+
+        this.reservationService.prendre(reservation.bookId).subscribe({
+            next: () => {
+                this.enCoursRetrait.set(null);
+                // La réservation devient FULFILLED et un prêt est créé :
+                // seul le serveur connaît le nouvel état de la liste.
+                this.charger();
+            },
+            error: (err) => {
+                this.enCoursRetrait.set(null);
+                console.error(err);
+            }
+        });
     }
 
     annuler(reservation: ReservationResponse) {
@@ -97,7 +121,7 @@ export class MesReservations implements OnInit, OnDestroy {
     libelleStatut(statut: ReservationStatus): string {
         switch (statut) {
             case 'PENDING':   return "En attente";
-            case 'READY_FOR_PICKUP': return "Disponible";
+            case 'READY_FOR_PICKUP': return "Réservée pour vous";
             case 'FULFILLED': return "Empruntée";
             case 'CANCELLED': return "Annulée";
             case 'EXPIRED':   return "Expirée";
@@ -106,7 +130,7 @@ export class MesReservations implements OnInit, OnDestroy {
     }
 
     // Deux messages seulement, et ils ne disent pas la même chose :
-    // AVAILABLE presse le lecteur, FULFILLED le rassure.
+    // READY_FOR_PICKUP presse le lecteur, FULFILLED le rassure.
     consigne(reservation: ReservationResponse): string {
         if (reservation.status === 'READY_FOR_PICKUP') {
             return "Cliquez sur Prendre avant l'échéance, sinon l'exemplaire passe au suivant.";
@@ -128,20 +152,34 @@ export class MesReservations implements OnInit, OnDestroy {
         return 'statut statut--' + statut.toLowerCase();
     }
 
-    // Le décompte n'a de sens que pendant les 72h, donc au statut AVAILABLE.
+    // Le décompte n'a de sens que pendant les 72h, donc au statut READY_FOR_PICKUP.
     decompteAffichable(reservation: ReservationResponse): boolean {
         return reservation.status === 'READY_FOR_PICKUP' && !!reservation.pickupDeadline;
     }
 
-    // pickupDeadline arrive en UTC. new Date() lit la chaîne ISO et
-    // ramène tout en instant absolu : la comparaison est juste quel que
-    // soit le fuseau du lecteur. Aucune conversion à faire à la main.
+    // Jackson sérialise LocalDateTime sans suffixe de fuseau. Une chaîne
+    // sans « Z » est lue comme heure LOCALE par JavaScript, alors que le
+    // back l'écrit en UTC : deux heures d'écart en France. On rétablit
+    // l'information manquante avant de convertir.
+    private enInstant(iso: string): number {
+        return new Date(iso.endsWith('Z') ? iso : iso + 'Z').getTime();
+    }
+
+    // Même correction pour l'affichage : la pipe date reçoit un objet Date
+    // construit à partir de l'instant réel, et non la chaîne brute qu'elle
+    // interpréterait comme heure locale.
+    enDate(iso: string | null): Date | null {
+        return iso ? new Date(this.enInstant(iso)) : null;
+    }
+
+    // pickupDeadline arrive en UTC mais sans suffixe de fuseau :
+    // enInstant rétablit le « Z » avant la comparaison.
     tempsRestant(reservation: ReservationResponse): string {
         if (!reservation.pickupDeadline) {
             return '—';
         }
 
-        const echeance = new Date(reservation.pickupDeadline).getTime();
+        const echeance = this.enInstant(reservation.pickupDeadline);
         const reste = echeance - this.maintenant();
 
         if (reste <= 0) {
@@ -162,7 +200,7 @@ export class MesReservations implements OnInit, OnDestroy {
         if (!reservation.pickupDeadline) {
             return false;
         }
-        const reste = new Date(reservation.pickupDeadline).getTime() - this.maintenant();
+        const reste = this.enInstant(reservation.pickupDeadline) - this.maintenant();
         return reste > 0 && reste < 6 * 3_600_000;
     }
 }

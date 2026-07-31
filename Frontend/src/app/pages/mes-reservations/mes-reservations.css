@@ -107,3 +107,39 @@
     opacity: 0.5;
     cursor: default;
 }
+
+/* Bouton de retrait — F7 */
+.bouton-prendre {
+    padding: 5px 12px;
+    margin-right: 6px;
+    border: 1px solid #2e7d32;
+    border-radius: 6px;
+    background: #2e7d32;
+    color: #fff;
+    font-size: 0.84rem;
+    cursor: pointer;
+}
+
+.bouton-prendre:hover:not(:disabled) {
+    background: #1b5e20;
+}
+
+.bouton-prendre:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Sortie de secours quand le chargement a échoué */
+.bouton-reessayer {
+    padding: 6px 14px;
+    border: 1px solid #546e7a;
+    border-radius: 6px;
+    background: #fff;
+    color: #546e7a;
+    font-size: 0.86rem;
+    cursor: pointer;
+}
+
+.bouton-reessayer:hover {
+    background: #eceff1;
+}

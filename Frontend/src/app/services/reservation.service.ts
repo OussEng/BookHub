@@ -36,4 +36,11 @@ export class ReservationService {
     cancelReservation(reservationId: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${reservationId}`, { withCredentials: true });
     }
+
+    // « Prendre » : le retrait passe par l'endpoint d'emprunt.
+    // createLoan appelle fulfillIfReady, qui reconnaît la réservation
+    // prête et la clôt en FULFILLED. Il n'y a pas d'endpoint « Prendre ».
+    prendre(bookId: number): Observable<void> {
+        return this.http.post<void>(`${environment.apiUrl}/loans/${bookId}/borrow`, null);
+    }
 }

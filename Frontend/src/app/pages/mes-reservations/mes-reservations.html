@@ -4,9 +4,12 @@
 
     @if (isLoading()) {
         <p class="info">Chargement…</p>
-    } @else if (errorMessage) {
-        <p class="erreur">{{ errorMessage }}</p>
-    } @else if (reservations.length === 0) {
+    } @else if (errorMessage()) {
+        <p class="erreur">{{ errorMessage() }}</p>
+        <button type="button" class="bouton-reessayer" (click)="reessayer()">
+            Réessayer
+        </button>
+    } @else if (reservations().length === 0) {
         <p class="info">
             Vous n'avez aucune réservation.
             <a routerLink="/">Parcourir le catalogue</a>
@@ -25,15 +28,15 @@
             </tr>
             </thead>
             <tbody>
-                @for (reservation of reservations; track reservation.id) {
+                @for (reservation of reservations(); track reservation.id) {
                     <tr>
                         <td>
                             <a [routerLink]="['/book', reservation.bookId]">
-                                Livre n° {{ reservation.bookId }}
+                                {{ reservation.bookTitle }}
                             </a>
                         </td>
 
-                        <td>{{ reservation.reservesDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td>{{ enDate(reservation.reservesDate) | date:'dd/MM/yyyy HH:mm' }}</td>
 
                         <td>
                             @if (rangAffichable(reservation.status)) {
@@ -56,16 +59,24 @@
                                     {{ tempsRestant(reservation) }}
                                 </span>
                                 <span class="echeance-absolue">
-                                    {{ reservation.pickupDeadline | date:'dd/MM HH:mm' }}
+                                    {{ enDate(reservation.pickupDeadline) | date:'dd/MM HH:mm' }}
                                 </span>
                             } @else if (reservation.pickupDeadline) {
-                                {{ reservation.pickupDeadline | date:'dd/MM/yyyy HH:mm' }}
+                                {{ enDate(reservation.pickupDeadline) | date:'dd/MM/yyyy HH:mm' }}
                             } @else {
                                 —
                             }
                         </td>
                         <td class="colonne-action">
-                            @if (annulable(reservation.status)) {
+                            @if (reservation.status === 'READY_FOR_PICKUP') {
+                                <button type="button"
+                                        class="bouton-prendre"
+                                        [disabled]="enCoursRetrait() === reservation.id"
+                                        (click)="prendre(reservation)">
+                                    Prendre
+                                </button>
+                            }
+                            @if (reservation.canBeCancelled) {
                                 <button type="button"
                                         class="bouton-annuler"
                                         [disabled]="enCoursAnnulation() === reservation.id"

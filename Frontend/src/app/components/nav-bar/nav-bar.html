@@ -13,6 +13,9 @@
             <li>
                 <a routerLink="/profile" class="hover:text-white/70 transition py-2">Profile</a>
             </li>
+            <li>
+                <a routerLink="/mes-reservations" class="hover:text-white/70 transition py-2">Mes réservations</a>
+            </li>
 
 
             @if (isLibrarian() || isAdmin()) {
@@ -115,6 +118,7 @@
             @if (isAuthenticated()) {
                 <a routerLink="/" (click)="closeMobileMenu()" class="text-white hover:text-white/70 text-lg font-light py-1">Catalogue</a>
                 <a routerLink="/profile" (click)="closeMobileMenu()" class="text-white hover:text-white/70 text-lg font-light py-1">Profile</a>
+                <a routerLink="/mes-reservations" (click)="closeMobileMenu()" class="text-white hover:text-white/70 text-lg font-light py-1">Mes réservations</a>
 
                 @if (isLibrarian()) {
                     <div class="flex flex-col gap-2 pt-3 border-t border-white/10">
