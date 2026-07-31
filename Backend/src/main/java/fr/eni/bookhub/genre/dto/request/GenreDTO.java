@@ -1,4 +1,4 @@
-package fr.eni.bookhub.genre.dto;
+package fr.eni.bookhub.genre.dto.request;
 
 import lombok.*;
 

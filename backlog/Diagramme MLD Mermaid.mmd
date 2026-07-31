@@ -1,0 +1,110 @@
+erDiagram
+    UTILISATEUR {
+        int idUtilisateur PK
+        varchar firstname
+        varchar lastname
+        varchar phone
+        varchar username
+        varchar email
+        varchar password
+        varchar role
+    }
+
+    AUTEUR {
+        int idAuteur PK
+        varchar firstname
+        varchar lastname
+        varchar penName
+    }
+
+    GENRE {
+        int idGenre PK
+        varchar label
+    }
+
+    LIVRE {
+        int idLivre PK
+        varchar title
+        varchar isbn
+        varchar img
+        date publishDate
+        varchar description
+    }
+
+    EXEMPLAIRE {
+        int idExemplaire PK
+        varchar serialNumber
+        varchar bookStatus
+        varchar condition
+        int idLivre FK
+    }
+
+    REFRESH_TOKEN {
+        int idRefreshToken PK
+        varchar tokenHash
+        timestamp expiresAt
+        boolean revoked
+        int idUtilisateur FK
+    }
+
+    ECRIRE {
+        int idLivre FK
+        int idAuteur FK
+    }
+
+    CLASSER {
+        int idLivre FK
+        int idGenre FK
+    }
+
+    EMPRUNTER {
+        int idEmprunt PK
+        int idUtilisateur FK
+        int idExemplaire FK
+        date loanDate
+        date dueDate
+        date returnDate
+        varchar status
+    }
+
+    DONNER_AVIS {
+        int idAvis PK
+        int idUtilisateur FK
+        int idLivre FK
+        int rating
+        varchar comment
+        varchar status
+        timestamp createdAt
+        timestamp updatedAt
+        timestamp moderatedAt
+    }
+
+    RESERVATION {
+        int idReservation PK
+        int idUtilisateur FK
+        int idLivre FK
+        int idExemplaire FK "nullable"
+        timestamp reservesDate
+        varchar status
+        timestamp notifiedAt
+        timestamp pickupDeadline
+    }
+
+    LIVRE ||--o{ EXEMPLAIRE : possede
+    UTILISATEUR ||--o{ REFRESH_TOKEN : possede
+
+    LIVRE ||--o{ ECRIRE : ""
+    AUTEUR ||--o{ ECRIRE : ""
+
+    LIVRE ||--o{ CLASSER : ""
+    GENRE ||--o{ CLASSER : ""
+
+    UTILISATEUR ||--o{ EMPRUNTER : ""
+    EXEMPLAIRE ||--o{ EMPRUNTER : ""
+
+    UTILISATEUR ||--o{ DONNER_AVIS : ""
+    LIVRE ||--o{ DONNER_AVIS : ""
+
+    UTILISATEUR ||--o{ RESERVATION : ""
+    LIVRE ||--o{ RESERVATION : ""
+    EXEMPLAIRE |o--o{ RESERVATION : ""

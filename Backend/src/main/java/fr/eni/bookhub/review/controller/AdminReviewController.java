@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/admin/reviews", produces = "application/json")
 @AllArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
-public class AdminReviewController {
+public class AdminReviewController implements AdminReviewControllerApi {
 
     private final ReviewService reviewService;
 

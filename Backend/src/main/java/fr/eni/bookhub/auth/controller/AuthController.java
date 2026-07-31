@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @AllArgsConstructor
-public class AuthController {
+public class AuthController implements AuthControllerApi {
 
     private static final String REFRESH_COOKIE_NAME = "refresh_token";
     private static final long REFRESH_COOKIE_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;

@@ -30,7 +30,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/books")
-public class BookController {
+public class BookController implements BookControllerApi {
 
     private final BookService bookService;
 

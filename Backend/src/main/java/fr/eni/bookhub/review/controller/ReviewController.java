@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/api/books/{bookId}/reviews", produces = "application/json")
 @AllArgsConstructor
-public class ReviewController {
+public class ReviewController implements ReviewControllerApi {
 
     private ReviewService reviewService;
 
