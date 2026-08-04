@@ -6,6 +6,7 @@ A full-stack community library management platform, an Angular frontend and a Sp
 [![SQL Server](https://img.shields.io/badge/SQL%20Server-%23336791.svg?logo=microsoftsqlserver&logoColor=white)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-%233178C6.svg?logo=typescript&logoColor=white)](#)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind%20CSS-%2306B6D4.svg?logo=tailwindcss&logoColor=white)](#)
+![CI](https://github.com/OussEng/todo-rest-api/actions/workflows/ci.yml/badge.svg)
  
 ---
  
